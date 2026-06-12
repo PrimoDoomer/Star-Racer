@@ -1,0 +1,364 @@
+{
+  "id": "circuit_one",
+  "name": "Circuit One",
+  "spawn": {
+    "position": [
+      145.0,
+      3.0,
+      0.0
+    ],
+    "y_rotation_deg": 0.0
+  },
+  "lap": {
+    "finish_x": 145.0,
+    "finish_half_width": 55.0,
+    "checkpoint_x": -145.0,
+    "checkpoint_half_width": 55.0,
+    "positive_z_threshold": 50.0,
+    "laps_to_win": 3
+  },
+  "primitives": [
+    {
+      "type": "floor",
+      "name": "ground",
+      "size": [
+        500.0,
+        1.0,
+        500.0
+      ],
+      "position": [
+        0.0,
+        -0.5,
+        0.0
+      ],
+      "color": [
+        0.3,
+        0.3,
+        0.3
+      ]
+    },
+    {
+      "type": "wall",
+      "name": "center",
+      "size": [
+        180.0,
+        5.0,
+        180.0
+      ],
+      "position": [
+        0.0,
+        2.5,
+        0.0
+      ]
+    },
+    {
+      "type": "wall",
+      "name": "perimeter_n",
+      "size": [
+        450.0,
+        5.0,
+        50.0
+      ],
+      "position": [
+        25.0,
+        2.5,
+        -225.0
+      ]
+    },
+    {
+      "type": "wall",
+      "name": "perimeter_e",
+      "size": [
+        450.0,
+        5.0,
+        50.0
+      ],
+      "position": [
+        -225.0,
+        2.5,
+        -25.0
+      ],
+      "rotation_deg": [
+        0.0,
+        -90.0,
+        0.0
+      ]
+    },
+    {
+      "type": "wall",
+      "name": "perimeter_s",
+      "size": [
+        450.0,
+        5.0,
+        50.0
+      ],
+      "position": [
+        -25.0,
+        2.5,
+        225.0
+      ],
+      "rotation_deg": [
+        0.0,
+        180.0,
+        0.0
+      ]
+    },
+    {
+      "type": "wall",
+      "name": "perimeter_w",
+      "size": [
+        450.0,
+        5.0,
+        50.0
+      ],
+      "position": [
+        225.0,
+        2.5,
+        25.0
+      ],
+      "rotation_deg": [
+        0.0,
+        90.0,
+        0.0
+      ]
+    },
+    {
+      "type": "wall",
+      "name": "bump_ramp_a",
+      "size": [
+        90.0,
+        2.0,
+        35.51056
+      ],
+      "position": [
+        -145.0,
+        2.0143,
+        27.331
+      ],
+      "rotation_deg": [
+        9.7264,
+        0.0,
+        0.0
+      ],
+      "color": [
+        0.8,
+        0.48,
+        0.1
+      ]
+    },
+    {
+      "type": "wall",
+      "name": "bump_top",
+      "size": [
+        90.0,
+        2.0,
+        20.0
+      ],
+      "position": [
+        -145.0,
+        5.0,
+        0.0
+      ],
+      "color": [
+        0.8,
+        0.48,
+        0.1
+      ]
+    },
+    {
+      "type": "wall",
+      "name": "bump_ramp_b",
+      "size": [
+        90.0,
+        2.0,
+        35.51056
+      ],
+      "position": [
+        -145.0,
+        2.0143,
+        -27.331
+      ],
+      "rotation_deg": [
+        -9.7264,
+        0.0,
+        0.0
+      ],
+      "color": [
+        0.8,
+        0.48,
+        0.1
+      ]
+    },
+    {
+      "type": "pad",
+      "name": "pad_e1",
+      "size": [
+        10.0,
+        4.0,
+        10.0
+      ],
+      "position": [
+        145.0,
+        2.0,
+        -50.0
+      ],
+      "heading": [
+        0.0,
+        0.0,
+        -1.0
+      ]
+    },
+    {
+      "type": "pad",
+      "name": "pad_e2",
+      "size": [
+        10.0,
+        4.0,
+        10.0
+      ],
+      "position": [
+        145.0,
+        2.0,
+        -100.0
+      ],
+      "heading": [
+        0.0,
+        0.0,
+        -1.0
+      ]
+    },
+    {
+      "type": "pad",
+      "name": "pad_e3",
+      "size": [
+        10.0,
+        4.0,
+        10.0
+      ],
+      "position": [
+        145.0,
+        2.0,
+        -155.0
+      ],
+      "heading": [
+        0.0,
+        0.0,
+        -1.0
+      ]
+    },
+    {
+      "type": "pad",
+      "name": "pad_n1",
+      "size": [
+        10.0,
+        4.0,
+        10.0
+      ],
+      "position": [
+        80.0,
+        2.0,
+        -155.0
+      ],
+      "heading": [
+        -1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "pad",
+      "name": "pad_n2",
+      "size": [
+        10.0,
+        4.0,
+        10.0
+      ],
+      "position": [
+        -80.0,
+        2.0,
+        -155.0
+      ],
+      "heading": [
+        -1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "pad",
+      "name": "pad_w1",
+      "size": [
+        10.0,
+        4.0,
+        10.0
+      ],
+      "position": [
+        -145.0,
+        2.0,
+        -100.0
+      ],
+      "heading": [
+        0.0,
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "type": "pad",
+      "name": "pad_w2",
+      "size": [
+        10.0,
+        4.0,
+        10.0
+      ],
+      "position": [
+        -145.0,
+        2.0,
+        100.0
+      ],
+      "heading": [
+        0.0,
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "type": "pad",
+      "name": "pad_s1",
+      "size": [
+        10.0,
+        4.0,
+        10.0
+      ],
+      "position": [
+        -80.0,
+        2.0,
+        155.0
+      ],
+      "heading": [
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "type": "pad",
+      "name": "pad_s2",
+      "size": [
+        10.0,
+        4.0,
+        10.0
+      ],
+      "position": [
+        80.0,
+        2.0,
+        155.0
+      ],
+      "heading": [
+        1.0,
+        0.0,
+        0.0
+      ]
+    }
+  ]
+}

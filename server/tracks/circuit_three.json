@@ -1,0 +1,122 @@
+{
+  "id": "circuit_three",
+  "name": "Circuit Three",
+  "spawn": {
+    "position": [150.0, 3.0, 0.0],
+    "y_rotation_deg": 0.0
+  },
+  "lap": {
+    "finish_x": 150.0,
+    "finish_half_width": 45.0,
+    "checkpoint_x": -150.0,
+    "checkpoint_half_width": 45.0,
+    "positive_z_threshold": 150.0,
+    "laps_to_win": 3
+  },
+  "primitives": [
+    {
+      "type": "floor", "name": "ring_e",
+      "size": [60.0, 1.0, 540.0], "position": [150.0, -0.5, 0.0],
+      "color": [0.22, 0.24, 0.30]
+    },
+    {
+      "type": "floor", "name": "ring_n",
+      "size": [360.0, 1.0, 60.0], "position": [0.0, -0.5, -240.0],
+      "color": [0.19, 0.21, 0.26]
+    },
+    {
+      "type": "floor", "name": "ring_s",
+      "size": [360.0, 1.0, 60.0], "position": [0.0, -0.5, 240.0],
+      "color": [0.19, 0.21, 0.26]
+    },
+
+    {
+      "type": "floor", "name": "ring_w_outer",
+      "size": [30.0, 1.0, 540.0], "position": [-165.0, -0.5, 0.0],
+      "color": [0.20, 0.27, 0.24]
+    },
+    {
+      "type": "floor", "name": "ring_w_inner",
+      "size": [30.0, 1.0, 540.0], "position": [-135.0, -0.5, 0.0],
+      "color": [0.28, 0.24, 0.18]
+    },
+
+    {
+      "type": "wall", "name": "perimeter_n",
+      "size": [600.0, 6.0, 20.0], "position": [0.0, 3.0, -290.0]
+    },
+    {
+      "type": "wall", "name": "perimeter_s",
+      "size": [600.0, 6.0, 20.0], "position": [0.0, 3.0, 290.0]
+    },
+    {
+      "type": "wall", "name": "perimeter_e",
+      "size": [20.0, 6.0, 620.0], "position": [210.0, 3.0, 0.0]
+    },
+    {
+      "type": "wall", "name": "perimeter_w",
+      "size": [20.0, 6.0, 620.0], "position": [-210.0, 3.0, 0.0]
+    },
+
+    {
+      "type": "wall", "name": "fork_divider",
+      "size": [4.0, 3.0, 400.0], "position": [-150.0, 1.5, 0.0],
+      "color": [0.85, 0.55, 0.10]
+    },
+    {
+      "type": "wall", "name": "jump_ramp",
+      "size": [26.0, 2.0, 35.51056], "position": [-135.0, 2.0143, -50.0],
+      "rotation_deg": [-9.7264, 0.0, 0.0],
+      "color": [0.85, 0.48, 0.10]
+    },
+    {
+      "type": "pad", "name": "pad_jump",
+      "size": [10.0, 4.0, 10.0], "position": [-135.0, 2.0, -100.0],
+      "heading": [0.0, 0.0, 1.0], "color": [0.95, 0.55, 0.10],
+      "boost_strength": 28.0
+    },
+
+    {
+      "type": "wall", "name": "tunnel_roof",
+      "size": [160.0, 3.0, 60.0], "position": [0.0, 9.0, -240.0],
+      "color": [0.12, 0.13, 0.16]
+    },
+    {
+      "type": "pad", "name": "pad_north_ne",
+      "size": [10.0, 4.0, 10.0], "position": [120.0, 2.0, -240.0],
+      "heading": [-1.0, 0.0, 0.0], "color": [0.10, 0.70, 0.95]
+    },
+    {
+      "type": "pad", "name": "pad_tunnel",
+      "size": [10.0, 4.0, 10.0], "position": [-70.0, 2.0, -240.0],
+      "heading": [-1.0, 0.0, 0.0], "color": [0.62, 0.28, 0.95]
+    },
+
+    {
+      "type": "wall", "name": "chicane_a",
+      "size": [16.0, 3.0, 33.0], "position": [-40.0, 1.5, 226.5],
+      "color": [0.80, 0.30, 0.30]
+    },
+    {
+      "type": "wall", "name": "chicane_b",
+      "size": [16.0, 3.0, 33.0], "position": [40.0, 1.5, 253.5],
+      "color": [0.80, 0.30, 0.30]
+    },
+    {
+      "type": "pad", "name": "pad_south_exit",
+      "size": [10.0, 4.0, 10.0], "position": [115.0, 2.0, 240.0],
+      "heading": [1.0, 0.0, 0.0], "color": [0.10, 0.70, 0.95]
+    },
+
+    {
+      "type": "pad", "name": "pad_east_exit",
+      "size": [10.0, 4.0, 10.0], "position": [145.0, 2.0, 170.0],
+      "heading": [0.0, 0.0, -1.0], "color": [0.10, 0.70, 0.95]
+    },
+
+    {
+      "type": "hazard", "name": "void_catcher",
+      "size": [600.0, 2.0, 600.0], "position": [0.0, -25.0, 0.0]
+    }
+  ]
+}

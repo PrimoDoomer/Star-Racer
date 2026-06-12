@@ -1,0 +1,111 @@
+{
+  "id": "circuit_two",
+  "name": "Circuit Two",
+  "spawn": {
+    "position": [125.0, 3.0, 0.0],
+    "y_rotation_deg": 0.0
+  },
+  "lap": {
+    "finish_x": 125.0,
+    "finish_half_width": 20.0,
+    "checkpoint_x": -125.0,
+    "checkpoint_half_width": 20.0,
+    "positive_z_threshold": 70.0,
+    "laps_to_win": 3
+  },
+  "primitives": [
+    {
+      "type": "floor",
+      "name": "ground",
+      "size": [320.0, 1.0, 320.0],
+      "position": [0.0, -0.5, 0.0],
+      "color": [0.28, 0.28, 0.32]
+    },
+    {
+      "type": "wall",
+      "name": "perimeter_n",
+      "size": [320.0, 5.0, 20.0],
+      "position": [0.0, 2.5, -150.0]
+    },
+    {
+      "type": "wall",
+      "name": "perimeter_s",
+      "size": [320.0, 5.0, 20.0],
+      "position": [0.0, 2.5, 150.0]
+    },
+    {
+      "type": "wall",
+      "name": "perimeter_e",
+      "size": [20.0, 5.0, 320.0],
+      "position": [150.0, 2.5, 0.0]
+    },
+    {
+      "type": "wall",
+      "name": "perimeter_w",
+      "size": [20.0, 5.0, 320.0],
+      "position": [-150.0, 2.5, 0.0]
+    },
+    {
+      "type": "wall",
+      "name": "center",
+      "size": [220.0, 5.0, 220.0],
+      "position": [0.0, 2.5, 0.0]
+    },
+    {
+      "type": "wall",
+      "name": "chicane_e1",
+      "size": [15.0, 5.0, 20.0],
+      "position": [117.5, 2.5, -40.0],
+      "color": [0.8, 0.48, 0.1]
+    },
+    {
+      "type": "wall",
+      "name": "chicane_e2",
+      "size": [15.0, 5.0, 20.0],
+      "position": [132.5, 2.5, -100.0],
+      "color": [0.8, 0.48, 0.1]
+    },
+    {
+      "type": "wall",
+      "name": "chicane_n1",
+      "size": [20.0, 5.0, 15.0],
+      "position": [40.0, 2.5, -117.5],
+      "color": [0.8, 0.48, 0.1]
+    },
+    {
+      "type": "wall",
+      "name": "chicane_n2",
+      "size": [20.0, 5.0, 15.0],
+      "position": [-40.0, 2.5, -132.5],
+      "color": [0.8, 0.48, 0.1]
+    },
+    {
+      "type": "wall",
+      "name": "chicane_w1",
+      "size": [15.0, 5.0, 20.0],
+      "position": [-117.5, 2.5, 40.0],
+      "color": [0.8, 0.48, 0.1]
+    },
+    {
+      "type": "wall",
+      "name": "chicane_w2",
+      "size": [15.0, 5.0, 20.0],
+      "position": [-132.5, 2.5, 100.0],
+      "color": [0.8, 0.48, 0.1]
+    },
+    {
+      "type": "wall",
+      "name": "chicane_s1",
+      "size": [20.0, 5.0, 15.0],
+      "position": [-40.0, 2.5, 117.5],
+      "color": [0.8, 0.48, 0.1]
+    },
+    {
+      "type": "wall",
+      "name": "chicane_s2",
+      "size": [20.0, 5.0, 15.0],
+      "position": [40.0, 2.5, 132.5],
+      "color": [0.8, 0.48, 0.1]
+    }
+  ]
+}

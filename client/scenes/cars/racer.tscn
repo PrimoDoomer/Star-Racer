@@ -1,0 +1,19 @@
+[gd_scene load_steps=2 format=3 uid="uid://carwrapracer01"]
+
+[ext_resource type="PackedScene" uid="uid://dad5fsq0fr6y4" path="res://assets/models/kenney_race_car.glb" id="1"]
+
+[node name="Racer" type="Node3D"]
+
+[node name="Lift" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.045, 0)
+
+[node name="Scale" type="Node3D" parent="Lift"]
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0)
+
+[node name="Orient" type="Node3D" parent="Lift/Scale"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0)
+
+[node name="Recenter" type="Node3D" parent="Lift/Scale/Orient"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.35, -0.165, 0.663)
+
+[node name="kenney_race_car" parent="Lift/Scale/Orient/Recenter" instance=ExtResource("1")]

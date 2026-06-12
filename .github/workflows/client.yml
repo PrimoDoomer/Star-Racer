@@ -1,0 +1,50 @@
+name: Client
+
+on:
+  pull_request:
+    branches: [release]
+  workflow_call:
+  workflow_dispatch:
+
+env:
+  GODOT_VERSION: "4.6-stable"
+
+jobs:
+  check:
+    name: import + script check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./client
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Godot ${{ env.GODOT_VERSION }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/godot"
+          cd "$HOME/godot"
+          curl -fL -o godot.zip \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/Godot_v${GODOT_VERSION}_linux.x86_64.zip"
+          unzip -q godot.zip
+          mv Godot_v${GODOT_VERSION}_linux.x86_64 godot
+          chmod +x godot
+          echo "$HOME/godot" >> "$GITHUB_PATH"
+
+      - name: Import project (headless)
+        run: |
+          # First headless run imports assets and exits.
+          godot --headless --import || true
+
+      - name: GDScript syntax check
+        run: |
+          set -euo pipefail
+          fail=0
+          while IFS= read -r -d '' script; do
+            echo "::group::$script"
+            if ! godot --headless --check-only --script "$script"; then
+              fail=1
+            fi
+            echo "::endgroup::"
+          done < <(find . -type f -name "*.gd" -not -path "./addons/*" -print0)
+          exit $fail
