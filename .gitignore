@@ -1,0 +1,18 @@
+target/
+.claude/
+.godot/
+/android/
+.vscode/
+~*
+Godot Exports/
+.nomedia
+.import/
+export.cfg
+export_credentials.cfg
+*.tmp
+*.translation
+.mono/
+data_*/
+mono_crash.*.json
+client/addons/
+build/

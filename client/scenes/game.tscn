@@ -1,0 +1,684 @@
+[gd_scene format=3 uid="uid://byhujfase7yp8"]
+
+[ext_resource type="Script" uid="uid://0u22f5eygcu3" path="res://scripts/game.gd" id="1_lbhrr"]
+[ext_resource type="Script" uid="uid://bl7brkqwdge4k" path="res://scripts/network.gd" id="2_iywne"]
+[ext_resource type="Environment" uid="uid://bq0j3trnouuvl" path="res://env.tres" id="3_p57ef"]
+[ext_resource type="Script" uid="uid://dtpgdenatq2uo" path="res://scripts/ui.gd" id="4_u5sy4"]
+[ext_resource type="Shader" uid="uid://mvpn4vwtqnjp" path="res://shaders/menu_bg.gdshader" id="5_menubg"]
+[ext_resource type="Script" uid="uid://b7extnoroacp1" path="res://scripts/drift_bar.gd" id="6_driftbar"]
+[ext_resource type="Script" uid="uid://dn7yu6bmftgl" path="res://scripts/start_lights.gd" id="7_startlights"]
+[ext_resource type="Script" uid="uid://gd1xi0iqmox7" path="res://scripts/touch_controls.gd" id="8_touch"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_menubg"]
+shader = ExtResource("5_menubg")
+shader_parameter/top_color = Color(0.1, 0.115, 0.14, 1)
+shader_parameter/bottom_color = Color(0.075, 0.085, 0.105, 1)
+shader_parameter/vignette = 0.32
+
+[sub_resource type="SystemFont" id="SystemFont_ui"]
+font_names = PackedStringArray("Segoe UI", "Calibri", "sans-serif")
+subpixel_positioning = 0
+
+[sub_resource type="LabelSettings" id="LS_title"]
+font = SubResource("SystemFont_ui")
+font_size = 44
+font_color = Color(0.95, 0.97, 1, 1)
+
+[sub_resource type="LabelSettings" id="LS_version"]
+font_size = 13
+font_color = Color(0.42, 0.47, 0.55, 1)
+
+[sub_resource type="LabelSettings" id="LS_footer"]
+font_size = 12
+font_color = Color(0.34, 0.39, 0.46, 1)
+
+[sub_resource type="LabelSettings" id="LS_info"]
+font_size = 15
+font_color = Color(0.7, 0.77, 0.86, 1)
+
+[sub_resource type="StyleBoxFlat" id="SBF_surface"]
+content_margin_left = 26.0
+content_margin_top = 26.0
+content_margin_right = 26.0
+content_margin_bottom = 26.0
+bg_color = Color(0.105, 0.12, 0.15, 0.97)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.17, 0.19, 0.24, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="LabelSettings" id="LS_section"]
+font_size = 13
+font_color = Color(0.5, 0.6, 0.72, 0.95)
+
+[sub_resource type="StyleBoxFlat" id="SBF_tree_panel"]
+content_margin_left = 8.0
+content_margin_top = 8.0
+content_margin_right = 8.0
+content_margin_bottom = 8.0
+bg_color = Color(0.07, 0.08, 0.1, 0.85)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.15, 0.17, 0.21, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="LabelSettings" id="LS_field"]
+font_size = 13
+font_color = Color(0.5, 0.55, 0.63, 1)
+
+[sub_resource type="StyleBoxFlat" id="SBF_primary_normal"]
+content_margin_left = 22.0
+content_margin_top = 12.0
+content_margin_right = 22.0
+content_margin_bottom = 12.0
+bg_color = Color(0.4, 0.5, 0.62, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="SBF_primary_pressed"]
+content_margin_left = 22.0
+content_margin_top = 12.0
+content_margin_right = 22.0
+content_margin_bottom = 12.0
+bg_color = Color(0.33, 0.42, 0.53, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="SBF_primary_hover"]
+content_margin_left = 22.0
+content_margin_top = 12.0
+content_margin_right = 22.0
+content_margin_bottom = 12.0
+bg_color = Color(0.48, 0.59, 0.72, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="SBF_primary_disabled"]
+content_margin_left = 22.0
+content_margin_top = 12.0
+content_margin_right = 22.0
+content_margin_bottom = 12.0
+bg_color = Color(0.16, 0.2, 0.27, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="SBF_primary_focus"]
+draw_center = false
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.6, 0.7, 0.82, 0.9)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="LabelSettings" id="LS_lobby_title"]
+font = SubResource("SystemFont_ui")
+font_size = 36
+font_color = Color(0.95, 0.97, 1, 1)
+
+[sub_resource type="LabelSettings" id="LS_track_sub"]
+font_color = Color(0.55, 0.62, 0.71, 1)
+
+[sub_resource type="LabelSettings" id="LS_pilots_header"]
+font_size = 12
+font_color = Color(0.5, 0.6, 0.72, 0.7)
+
+[sub_resource type="LabelSettings" id="LS_players_count"]
+font_size = 15
+font_color = Color(0.6, 0.67, 0.76, 1)
+
+[sub_resource type="LabelSettings" id="LS_countdown"]
+font = SubResource("SystemFont_ui")
+font_size = 60
+font_color = Color(0.95, 0.97, 1, 1)
+
+[node name="Root" type="Node" unique_id=426461752]
+
+[node name="Game" type="Node" parent="." unique_id=322353589]
+unique_name_in_owner = true
+script = ExtResource("1_lbhrr")
+
+[node name="Network" type="Node" parent="Game" unique_id=495099737 groups=["Network"]]
+unique_name_in_owner = true
+script = ExtResource("2_iywne")
+
+[node name="Track" type="Node3D" parent="Game" unique_id=1256846866]
+unique_name_in_owner = true
+
+[node name="Camera3D" type="Camera3D" parent="Game" unique_id=186793719]
+environment = ExtResource("3_p57ef")
+
+[node name="UI" type="Control" parent="Game" unique_id=68307350]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("4_u5sy4")
+
+[node name="MenuBackground" type="ColorRect" parent="Game/UI" unique_id=700000001]
+material = SubResource("ShaderMaterial_menubg")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MenuChrome" type="Control" parent="Game/UI" unique_id=313684329]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Title" type="Label" parent="Game/UI/MenuChrome" unique_id=1843833676]
+layout_mode = 1
+offset_left = 40.0
+offset_top = 28.0
+offset_right = 340.0
+offset_bottom = 84.0
+text = "STAR RACER"
+label_settings = SubResource("LS_title")
+
+[node name="Version" type="Label" parent="Game/UI/MenuChrome" unique_id=1668176429]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -160.0
+offset_top = 32.0
+offset_right = -40.0
+offset_bottom = 70.0
+grow_horizontal = 0
+text = "v1.0.0 rc
+06/16/2026"
+label_settings = SubResource("LS_version")
+horizontal_alignment = 2
+
+[node name="Footer" type="Label" parent="Game/UI/MenuChrome" unique_id=1824683306]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 40.0
+offset_top = -41.0
+offset_right = 400.0
+offset_bottom = -16.0
+grow_vertical = 0
+text = "github.com/PrimoDoomer/Star-Racer"
+label_settings = SubResource("LS_footer")
+
+[node name="InfoLabel" type="Label" parent="Game/UI" unique_id=63298000]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -360.0
+offset_top = -42.0
+offset_right = -24.0
+offset_bottom = -12.0
+grow_horizontal = 0
+grow_vertical = 0
+label_settings = SubResource("LS_info")
+horizontal_alignment = 2
+
+[node name="OnlineMenu" type="Control" parent="Game/UI" unique_id=582721910]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="NavButtons" type="VBoxContainer" parent="Game/UI/OnlineMenu" unique_id=499059477]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -188.0
+offset_top = 72.0
+offset_right = -40.0
+offset_bottom = 212.0
+grow_horizontal = 0
+theme_override_constants/separation = 10
+
+[node name="SettingsButton" type="Button" parent="Game/UI/OnlineMenu/NavButtons" unique_id=499059475]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+text = "ui_settings"
+
+[node name="EditorButton" type="Button" parent="Game/UI/OnlineMenu/NavButtons" unique_id=499059476]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+text = "ui_editor"
+
+[node name="QuitButton" type="Button" parent="Game/UI/OnlineMenu/NavButtons" unique_id=499059474]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+text = "ui_quit"
+
+[node name="Center" type="CenterContainer" parent="Game/UI/OnlineMenu" unique_id=582721911]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Container" type="HBoxContainer" parent="Game/UI/OnlineMenu/Center" unique_id=1845125114]
+custom_minimum_size = Vector2(1020, 560)
+layout_mode = 2
+theme_override_constants/separation = 22
+
+[node name="PilotPanel" type="PanelContainer" parent="Game/UI/OnlineMenu/Center/Container" unique_id=582722000]
+custom_minimum_size = Vector2(380, 0)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("SBF_surface")
+
+[node name="PilotBox" type="VBoxContainer" parent="Game/UI/OnlineMenu/Center/Container/PilotPanel" unique_id=582722001]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="PilotHeader" type="Label" parent="Game/UI/OnlineMenu/Center/Container/PilotPanel/PilotBox" unique_id=582722002]
+layout_mode = 2
+text = "ui_pilot"
+label_settings = SubResource("LS_section")
+
+[node name="PreviewSlot" type="PanelContainer" parent="Game/UI/OnlineMenu/Center/Container/PilotPanel/PilotBox" unique_id=582722003]
+custom_minimum_size = Vector2(0, 200)
+layout_mode = 2
+theme_override_styles/panel = SubResource("SBF_tree_panel")
+
+[node name="ModelNav" type="HBoxContainer" parent="Game/UI/OnlineMenu/Center/Container/PilotPanel/PilotBox" unique_id=582722004]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="PrevButton" type="Button" parent="Game/UI/OnlineMenu/Center/Container/PilotPanel/PilotBox/ModelNav" unique_id=582722005]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+text = "‹"
+
+[node name="ModelLabel" type="Label" parent="Game/UI/OnlineMenu/Center/Container/PilotPanel/PilotBox/ModelNav" unique_id=582722006]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Sport"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="NextButton" type="Button" parent="Game/UI/OnlineMenu/Center/Container/PilotPanel/PilotBox/ModelNav" unique_id=582722007]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+text = "›"
+
+[node name="NicknameLabel" type="Label" parent="Game/UI/OnlineMenu/Center/Container/PilotPanel/PilotBox" unique_id=582722008]
+layout_mode = 2
+text = "ui_nickname"
+label_settings = SubResource("LS_field")
+
+[node name="NicknameField" type="LineEdit" parent="Game/UI/OnlineMenu/Center/Container/PilotPanel/PilotBox" unique_id=174776782]
+layout_mode = 2
+placeholder_text = "ui_nickname_ph"
+max_length = 20
+
+[node name="CoursesPanel" type="PanelContainer" parent="Game/UI/OnlineMenu/Center/Container" unique_id=582723000]
+custom_minimum_size = Vector2(520, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("SBF_surface")
+
+[node name="CoursesBox" type="VBoxContainer" parent="Game/UI/OnlineMenu/Center/Container/CoursesPanel" unique_id=582723001]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="Tabs" type="HBoxContainer" parent="Game/UI/OnlineMenu/Center/Container/CoursesPanel/CoursesBox" unique_id=582723002]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="JoinTabButton" type="Button" parent="Game/UI/OnlineMenu/Center/Container/CoursesPanel/CoursesBox/Tabs" unique_id=582723003]
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+button_pressed = true
+text = "ui_tab_join"
+
+[node name="CreateTabButton" type="Button" parent="Game/UI/OnlineMenu/Center/Container/CoursesPanel/CoursesBox/Tabs" unique_id=582723004]
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+text = "ui_tab_create"
+
+[node name="JoinView" type="VBoxContainer" parent="Game/UI/OnlineMenu/Center/Container/CoursesPanel/CoursesBox" unique_id=582723005]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="LobbiesList" type="Tree" parent="Game/UI/OnlineMenu/Center/Container/CoursesPanel/CoursesBox/JoinView" unique_id=975235838]
+layout_mode = 2
+size_flags_vertical = 3
+columns = 7
+column_titles_visible = true
+hide_folding = true
+enable_recursive_folding = false
+enable_drag_unfolding = false
+hide_root = true
+select_mode = 1
+auto_tooltip = false
+scroll_horizontal_enabled = false
+
+[node name="JoinFooter" type="HBoxContainer" parent="Game/UI/OnlineMenu/Center/Container/CoursesPanel/CoursesBox/JoinView" unique_id=582723006]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="RefreshListButton" type="Button" parent="Game/UI/OnlineMenu/Center/Container/CoursesPanel/CoursesBox/JoinView/JoinFooter" unique_id=920269230]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "ui_refresh"
+
+[node name="JoinButton" type="Button" parent="Game/UI/OnlineMenu/Center/Container/CoursesPanel/CoursesBox/JoinView/JoinFooter" unique_id=142951911]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.96, 0.98, 1, 1)
+theme_override_colors/font_focus_color = Color(0.96, 0.98, 1, 1)
+theme_override_colors/font_pressed_color = Color(0.96, 0.98, 1, 1)
+theme_override_colors/font_hover_color = Color(0.96, 0.98, 1, 1)
+theme_override_colors/font_disabled_color = Color(0.45, 0.5, 0.58, 1)
+theme_override_styles/normal = SubResource("SBF_primary_normal")
+theme_override_styles/pressed = SubResource("SBF_primary_pressed")
+theme_override_styles/hover = SubResource("SBF_primary_hover")
+theme_override_styles/disabled = SubResource("SBF_primary_disabled")
+theme_override_styles/focus = SubResource("SBF_primary_focus")
+text = "ui_join_race"
+
+[node name="CreateView" type="VBoxContainer" parent="Game/UI/OnlineMenu/Center/Container/CoursesPanel/CoursesBox" unique_id=582723007]
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="LobbyNameLabel" type="Label" parent="Game/UI/OnlineMenu/Center/Container/CoursesPanel/CoursesBox/CreateView" unique_id=582723008]
+layout_mode = 2
+text = "ui_race_name"
+label_settings = SubResource("LS_field")
+
+[node name="LobbyNameField" type="LineEdit" parent="Game/UI/OnlineMenu/Center/Container/CoursesPanel/CoursesBox/CreateView" unique_id=1763056419]
+layout_mode = 2
+placeholder_text = "ui_race_name_ph"
+max_length = 20
+
+[node name="TrackRow" type="HBoxContainer" parent="Game/UI/OnlineMenu/Center/Container/CoursesPanel/CoursesBox/CreateView" unique_id=582723009]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TrackLabel" type="Label" parent="Game/UI/OnlineMenu/Center/Container/CoursesPanel/CoursesBox/CreateView/TrackRow" unique_id=582723010]
+layout_mode = 2
+text = "ui_track"
+
+[node name="TrackPicker" type="OptionButton" parent="Game/UI/OnlineMenu/Center/Container/CoursesPanel/CoursesBox/CreateView/TrackRow" unique_id=582723011]
+layout_mode = 2
+size_flags_horizontal = 3
+disabled = true
+
+[node name="PlayersRow" type="HBoxContainer" parent="Game/UI/OnlineMenu/Center/Container/CoursesPanel/CoursesBox/CreateView" unique_id=582723012]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="MinPlayersLabel" type="Label" parent="Game/UI/OnlineMenu/Center/Container/CoursesPanel/CoursesBox/CreateView/PlayersRow" unique_id=1677443846]
+layout_mode = 2
+text = "ui_players_min"
+
+[node name="MinPlayersField" type="LineEdit" parent="Game/UI/OnlineMenu/Center/Container/CoursesPanel/CoursesBox/CreateView/PlayersRow" unique_id=513145403]
+custom_minimum_size = Vector2(70, 0)
+layout_mode = 2
+focus_neighbor_right = NodePath("../MaxPlayersField")
+text = "1"
+alignment = 1
+max_length = 1
+context_menu_enabled = false
+emoji_menu_enabled = false
+shortcut_keys_enabled = false
+middle_mouse_paste_enabled = false
+selecting_enabled = false
+drag_and_drop_selection_enabled = false
+
+[node name="MaxPlayersLabel" type="Label" parent="Game/UI/OnlineMenu/Center/Container/CoursesPanel/CoursesBox/CreateView/PlayersRow" unique_id=1920602252]
+layout_mode = 2
+size_flags_horizontal = 10
+text = "ui_players_max"
+
+[node name="MaxPlayersField" type="LineEdit" parent="Game/UI/OnlineMenu/Center/Container/CoursesPanel/CoursesBox/CreateView/PlayersRow" unique_id=754789239]
+custom_minimum_size = Vector2(70, 0)
+layout_mode = 2
+focus_neighbor_left = NodePath("../MinPlayersField")
+text = "1"
+alignment = 1
+max_length = 1
+context_menu_enabled = false
+emoji_menu_enabled = false
+shortcut_keys_enabled = false
+middle_mouse_paste_enabled = false
+selecting_enabled = false
+drag_and_drop_selection_enabled = false
+
+[node name="CreateSpacer" type="Control" parent="Game/UI/OnlineMenu/Center/Container/CoursesPanel/CoursesBox/CreateView" unique_id=582723013]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="CreateButton" type="Button" parent="Game/UI/OnlineMenu/Center/Container/CoursesPanel/CoursesBox/CreateView" unique_id=3380370]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.98, 1, 1)
+theme_override_colors/font_focus_color = Color(0.96, 0.98, 1, 1)
+theme_override_colors/font_pressed_color = Color(0.96, 0.98, 1, 1)
+theme_override_colors/font_hover_color = Color(0.96, 0.98, 1, 1)
+theme_override_colors/font_disabled_color = Color(0.45, 0.5, 0.58, 1)
+theme_override_styles/normal = SubResource("SBF_primary_normal")
+theme_override_styles/pressed = SubResource("SBF_primary_pressed")
+theme_override_styles/hover = SubResource("SBF_primary_hover")
+theme_override_styles/disabled = SubResource("SBF_primary_disabled")
+theme_override_styles/focus = SubResource("SBF_primary_focus")
+text = "ui_create_race"
+
+[node name="IntermissionMenu" type="Control" parent="Game/UI" unique_id=206048886]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Center" type="CenterContainer" parent="Game/UI/IntermissionMenu" unique_id=206048887]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="Game/UI/IntermissionMenu/Center" unique_id=206048888]
+custom_minimum_size = Vector2(560, 600)
+layout_mode = 2
+theme_override_styles/panel = SubResource("SBF_surface")
+
+[node name="Container" type="VBoxContainer" parent="Game/UI/IntermissionMenu/Center/Panel" unique_id=700100100]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="LobbyName" type="Label" parent="Game/UI/IntermissionMenu/Center/Panel/Container" unique_id=355730984]
+layout_mode = 2
+text = "Lobbyname"
+label_settings = SubResource("LS_lobby_title")
+horizontal_alignment = 1
+
+[node name="CurrentTrackname" type="Label" parent="Game/UI/IntermissionMenu/Center/Panel/Container" unique_id=1606305829]
+layout_mode = 2
+text = "Trackname"
+label_settings = SubResource("LS_track_sub")
+horizontal_alignment = 1
+
+[node name="HeaderSep" type="HSeparator" parent="Game/UI/IntermissionMenu/Center/Panel/Container" unique_id=700100101]
+layout_mode = 2
+
+[node name="PilotsHeader" type="Label" parent="Game/UI/IntermissionMenu/Center/Panel/Container" unique_id=700100102]
+layout_mode = 2
+text = "ui_pilots"
+label_settings = SubResource("LS_pilots_header")
+horizontal_alignment = 1
+
+[node name="Control" type="ScrollContainer" parent="Game/UI/IntermissionMenu/Center/Panel/Container" unique_id=174838396]
+custom_minimum_size = Vector2(0, 280)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="PlayersInLobby" type="VBoxContainer" parent="Game/UI/IntermissionMenu/Center/Panel/Container/Control" unique_id=1331463627]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+
+[node name="PlayersCount" type="Label" parent="Game/UI/IntermissionMenu/Center/Panel/Container" unique_id=956375012]
+layout_mode = 2
+text = "Players count"
+label_settings = SubResource("LS_players_count")
+horizontal_alignment = 1
+
+[node name="FooterSep" type="HSeparator" parent="Game/UI/IntermissionMenu/Center/Panel/Container" unique_id=700100103]
+layout_mode = 2
+
+[node name="CountdownLabel" type="Label" parent="Game/UI/IntermissionMenu/Center/Panel/Container" unique_id=79486557]
+layout_mode = 2
+label_settings = SubResource("LS_countdown")
+horizontal_alignment = 1
+
+[node name="BackButton" type="Button" parent="Game/UI/IntermissionMenu/Center/Panel/Container" unique_id=329240496]
+custom_minimum_size = Vector2(260, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+focus_behavior_recursive = 2
+text = "ui_back_to_menu"
+
+[node name="PlayMenuPanel" type="PanelContainer" parent="Game/UI" unique_id=648314024]
+visible = false
+custom_minimum_size = Vector2(240, 0)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -120.0
+offset_top = -70.0
+offset_right = 120.0
+offset_bottom = 70.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("SBF_surface")
+
+[node name="PlayMenu" type="VBoxContainer" parent="Game/UI/PlayMenuPanel" unique_id=634902162]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="BackToRaceButton" type="Button" parent="Game/UI/PlayMenuPanel/PlayMenu" unique_id=1169749013]
+layout_mode = 2
+text = "ui_resume"
+
+[node name="SettingsButton" type="Button" parent="Game/UI/PlayMenuPanel/PlayMenu" unique_id=1062109795]
+layout_mode = 2
+text = "ui_settings"
+
+[node name="LeaveButton" type="Button" parent="Game/UI/PlayMenuPanel/PlayMenu" unique_id=1062109794]
+layout_mode = 2
+text = "ui_leave"
+
+[node name="DriftBar" type="Control" parent="Game/UI" unique_id=700000002]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("6_driftbar")
+
+[node name="TouchControls" type="Control" parent="Game/UI" unique_id=700000006]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("8_touch")
+
+[node name="StartLights" type="Control" parent="Game/UI" unique_id=700000003]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -50.0
+offset_right = 200.0
+offset_bottom = 50.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("7_startlights")
+
+[node name="Dong" type="AudioStreamPlayer" parent="Game/UI/StartLights" unique_id=700000004]
+volume_db = -2.0
+
+[node name="Ding" type="AudioStreamPlayer" parent="Game/UI/StartLights" unique_id=700000005]
+
+[connection signal="pressed" from="Game/UI/OnlineMenu/NavButtons/SettingsButton" to="Game/UI" method="_on_settings_pressed"]
+[connection signal="pressed" from="Game/UI/OnlineMenu/NavButtons/EditorButton" to="Game/UI" method="_on_editor_pressed"]
+[connection signal="pressed" from="Game/UI/OnlineMenu/NavButtons/QuitButton" to="Game/UI" method="_on_quit_pressed"]
+[connection signal="pressed" from="Game/UI/OnlineMenu/Center/Container/PilotPanel/PilotBox/ModelNav/PrevButton" to="Game/UI" method="_on_car_prev"]
+[connection signal="pressed" from="Game/UI/OnlineMenu/Center/Container/PilotPanel/PilotBox/ModelNav/NextButton" to="Game/UI" method="_on_car_next"]
+[connection signal="toggled" from="Game/UI/OnlineMenu/Center/Container/CoursesPanel/CoursesBox/Tabs/JoinTabButton" to="Game/UI" method="_on_join_tab_toggled"]
+[connection signal="toggled" from="Game/UI/OnlineMenu/Center/Container/CoursesPanel/CoursesBox/Tabs/CreateTabButton" to="Game/UI" method="_on_create_tab_toggled"]
+[connection signal="pressed" from="Game/UI/OnlineMenu/Center/Container/CoursesPanel/CoursesBox/JoinView/JoinFooter/RefreshListButton" to="Game/UI" method="_on_refresh_list_button_pressed"]
+[connection signal="pressed" from="Game/UI/OnlineMenu/Center/Container/CoursesPanel/CoursesBox/JoinView/JoinFooter/JoinButton" to="Game/UI" method="_on_join_button_pressed"]
+[connection signal="pressed" from="Game/UI/OnlineMenu/Center/Container/CoursesPanel/CoursesBox/CreateView/CreateButton" to="Game/UI" method="_on_create_button_pressed"]
+[connection signal="pressed" from="Game/UI/IntermissionMenu/Center/Panel/Container/BackButton" to="Game/UI" method="_on_back_button_pressed"]
+[connection signal="pressed" from="Game/UI/PlayMenuPanel/PlayMenu/BackToRaceButton" to="Game/UI" method="_on_back_to_race_pressed"]
+[connection signal="pressed" from="Game/UI/PlayMenuPanel/PlayMenu/SettingsButton" to="Game/UI" method="_on_settings_pressed"]
+[connection signal="pressed" from="Game/UI/PlayMenuPanel/PlayMenu/LeaveButton" to="Game/UI" method="_on_leave_pressed"]
