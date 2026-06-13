@@ -1,0 +1,7 @@
+# Pinned Godot addon versions. Edit, then re-run scripts/fetch-addons.{sh,ps1}.
+# Format: <addon_id> <github_repo> <release_tag> <asset_filename>
+# Asset is fetched from https://github.com/<repo>/releases/download/<tag>/<asset_filename>.
+# <addon_id> must match the folder name produced inside Client/addons/.
+
+debug_draw_3d     DmitriySalnikov/godot_debug_draw_3d   1.5.1     debug-draw-3d_1.5.1.zip
+godot-rapier3d    appsinacup/godot-rapier-physics       v0.8.28   godot-rapier-3d-single-simd-parallel.zip

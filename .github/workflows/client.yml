@@ -1,0 +1,72 @@
+name: Client
+
+on:
+  pull_request:
+    branches: [release]
+  workflow_call:
+  workflow_dispatch:
+
+env:
+  GODOT_VERSION: "4.6-stable"
+
+jobs:
+  check:
+    name: import + script check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./client
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Godot ${{ env.GODOT_VERSION }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/godot"
+          cd "$HOME/godot"
+          curl -fL -o godot.zip \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/Godot_v${GODOT_VERSION}_linux.x86_64.zip"
+          unzip -q godot.zip
+          mv Godot_v${GODOT_VERSION}_linux.x86_64 godot
+          chmod +x godot
+          echo "$HOME/godot" >> "$GITHUB_PATH"
+
+      - name: Import project (headless)
+        run: |
+          # First headless run imports assets and exits.
+          godot --headless --import || true
+
+      - name: GDScript syntax check
+        run: |
+          set -euo pipefail
+          # Per-file `--check-only` can't resolve autoloads (Bindings/Locale) or
+          # class_name globals in isolation, so it false-fails. Instead, load()
+          # every .gd inside a real MainLoop (full project context, like runtime)
+          # and fail if the engine logged any parse/compile error.
+          cat > _ci_check_scripts.gd <<'GD'
+          extends SceneTree
+          func _initialize() -> void:
+              var files: Array[String] = []
+              _gather("res://", files)
+              for f in files:
+                  load(f)
+              quit(0)
+          func _gather(dir: String, out: Array) -> void:
+              var d := DirAccess.open(dir)
+              if d == null:
+                  return
+              for f in d.get_files():
+                  if f.ends_with(".gd"):
+                      out.append(dir.path_join(f))
+              for sub in d.get_directories():
+                  if sub != "addons" and not sub.begins_with("."):
+                      _gather(dir.path_join(sub), out)
+          GD
+          log="$(godot --headless --script res://_ci_check_scripts.gd 2>&1)"
+          echo "$log"
+          rm -f _ci_check_scripts.gd _ci_check_scripts.gd.uid
+          if grep -qiE "SCRIPT ERROR|parse error|compile error|failed to load script" <<<"$log"; then
+            echo "::error::GDScript parse/compile errors detected"
+            exit 1
+          fi
+          echo "GDScript check passed."
