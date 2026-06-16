@@ -1,0 +1,33 @@
+[gd_scene format=3 uid="uid://3nsyynve72d0"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_wqo35"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_iim66"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_modcp"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_cj3sh"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_8tj53"]
+
+[node name="Opponent" type="Node3D" unique_id=188513086]
+
+[node name="Body" type="MeshInstance3D" parent="." unique_id=880295020]
+transform = Transform3D(1.9999999, -1.4561561e-09, -3.2717168e-07, -3.2425928e-07, 0.2575911, -1.9833424, 4.3582386e-08, 1.9833424, 0.2575911, -0.0054188976, 0.41978472, -0.0026587248)
+mesh = SubResource("CapsuleMesh_wqo35")
+
+[node name="WheelFixedLeft" type="MeshInstance3D" parent="." unique_id=702103095]
+transform = Transform3D(-9.1028085e-08, 0.41649622, -9.102814e-08, -3.6411242e-07, -1.8205629e-08, -2.082481, -2.082481, -1.8205629e-08, 3.641124e-07, -1.2520239, 0.050295226, 1.3221947)
+mesh = SubResource("CylinderMesh_iim66")
+
+[node name="WheelFixedRight" type="MeshInstance3D" parent="." unique_id=836063252]
+transform = Transform3D(2.4833296e-08, 0.41649622, -9.102814e-08, 0, -1.8205629e-08, -2.082481, -2.082481, 4.966665e-09, 0, 1.2514597, 0.050295234, 1.3221947)
+mesh = SubResource("CylinderMesh_modcp")
+
+[node name="WheelTurnLeft" type="MeshInstance3D" parent="." unique_id=99737819]
+transform = Transform3D(-6.068541e-08, 0.2776641, -6.0685394e-08, -2.4274158e-07, -1.2137079e-08, -1.3883203, -1.3883203, -1.2137081e-08, 2.427415e-07, -1.2828496, -0.27564842, -1.3753052)
+mesh = SubResource("CylinderMesh_cj3sh")
+
+[node name="WheelTurnRight" type="MeshInstance3D" parent="." unique_id=1756203209]
+transform = Transform3D(-6.068541e-08, 0.2776641, -6.0685394e-08, -2.4274158e-07, -1.2137079e-08, -1.3883203, -1.3883203, -1.2137081e-08, 2.427415e-07, 1.27201, -0.27564847, -1.3752913)
+mesh = SubResource("CylinderMesh_8tj53")
