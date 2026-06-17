@@ -3,9 +3,13 @@ extends RigidBody3D
 # Speeds halved across the board to fit the tracks (see lobby.rs). All forces,
 # lateral-grip caps, thresholds and boost magnitudes scale together so the FEEL is
 # preserved at half pace. MUST match the server.
-const THROTTLE_FORCE     := 8_500.0
-const REVERSE_FORCE      := 2_500.0
-const BRAKE_FORCE        := 4_000.0
+# Master pace multiplier: forces, launch & boost speeds and the lateral-grip caps
+# all derive from this one knob. ×4/3 bumps the whole pace by a third. MUST match
+# the server (lobby.rs SPEED_SCALE).
+const SPEED_SCALE        := 4.0 / 3.0
+const THROTTLE_FORCE     := 8_500.0 * SPEED_SCALE
+const REVERSE_FORCE      := 2_500.0 * SPEED_SCALE
+const BRAKE_FORCE        := 4_000.0 * SPEED_SCALE
 const BRAKE_MIN_SPEED    := 0.5
 const MOTION_DIRECTION_EPSILON := 0.25
 const MAX_TURN_RATE_GRIP := 1.2
@@ -21,8 +25,8 @@ const STEER_SMOOTH_RATE  := 8.0
 # acceleration, so the achievable turn rate is lat_accel/speed: pure grip washes
 # out at racing pace (the "anomaly"), while a drift's lower cap lets the slide
 # live. The break-loose collapse is gated to grip only.
-const GRIP_LAT_ACCEL     := 9.0     # m/s² — holds gentle/slow turns, washes at speed
-const DRIFT_LAT_ACCEL    := 3.0     # m/s² — low, so the drift slide lags and lives
+const GRIP_LAT_ACCEL     := 9.0 * SPEED_SCALE   # m/s² — holds gentle/slow turns, washes at speed
+const DRIFT_LAT_ACCEL    := 3.0 * SPEED_SCALE   # m/s² — low, so the drift slide lags and lives
 # Falling into drift couples ANGLE and EFFORT (see _drift_enter_threshold_deg):
 # gentle steering must build the full SLIP_BREAK_DEG of slide, cranking hard at
 # speed drops the bar to SLIP_BREAK_HARD_DEG. Mirrors lobby.rs.
@@ -43,22 +47,24 @@ const GRIP_BLEND_RATE    := 6.0
 # Charge fills at full rate up to BOOST_CHARGE_KNEE (~2/3), then tapers to
 # BOOST_CHARGE_TOP_FACTOR of that rate toward full — so maxing the bar takes a
 # long, committed drift. Mirrors the server (lobby.rs boost_charge_increment).
-const BOOST_CHARGE_RATE   := 0.45   # slower base fill (was 1.0): the whole bar takes much longer
+const BOOST_CHARGE_RATE   := 0.18   # slow base fill
+const BOOST_CHARGE_ANGLE_RATE := 0.6   # extra fill rate at a full-angle slide
+const BOOST_CHARGE_ANGLE_REF_DEG := 35.0  # slip angle (°) at which the angle term saturates
 const BOOST_CHARGE_KNEE   := 0.667  # first 2/3 fill normally
 const BOOST_CHARGE_TOP_FACTOR := 0.25  # last third is degressive (down to 25% rate)
 const BOOST_CHARGE_DECAY  := 2.0
 const BOOST_CHARGE_MIN    := 0.15
-const BOOST_PEAK_BONUS    := 11.5   # drift-boost overshoot above cruise (halved with speed)
+const BOOST_PEAK_BONUS    := 11.5 * SPEED_SCALE   # drift-boost overshoot above cruise
 const BOOST_DURATION      := 1.5
 const BOOST_ALIGN_THRESHOLD_COS := 0.9781476  # cos(12°)
 const BOOST_PENDING_TIMEOUT := 1.5
-const BOOST_SUSTAIN_FORCE  := 16_500.0   # halved with the drive force
+const BOOST_SUSTAIN_FORCE  := 16_500.0 * SPEED_SCALE   # scales with the drive force
 
 # Launch (rocket start) — server-authoritative; predicted here with the same rule.
 # A perfect launch (throttle down at GO) reaches LAUNCH_SPEED (≈ cruise + overshoot);
 # quality fades over the window. Mirrors lobby.rs LAUNCH_SPEED / LAUNCH_WINDOW.
 const ROCKET_WINDOW_S := 0.25
-const LAUNCH_SPEED    := 32.0
+const LAUNCH_SPEED    := 32.0 * SPEED_SCALE
 
 const PAD_BOOST_SCALE := 0.5   # mirror lobby.rs: scale track pad boosts to half speed
 
@@ -304,7 +310,7 @@ func _physics_process(delta: float) -> void:
 
 	# Boost FSM (mirrors server) — uses horizontal forward. Sustain force only
 	# applies while grounded.
-	_update_boost_fsm(horiz_forward, speed, _drift_state, delta, grounded)
+	_update_boost_fsm(horiz_forward, speed, _drift_state, slip_mag, delta, grounded)
 	_was_star_drift_pressed = star_drift_input
 	_was_drift_state = _drift_state
 
@@ -422,18 +428,21 @@ func _drift_enter_threshold_deg(steer_effort: float, speed: float) -> float:
 # One tick of drift-boost charge: full rate over the first ~2/3 of the bar, then
 # tapering through the final third so topping it off demands a long, sustained
 # drift. Mirrors the server (lobby.rs boost_charge_increment).
-func _boost_charge_increment(charge: float, delta: float) -> float:
+func _boost_charge_increment(charge: float, slip_deg: float, delta: float) -> float:
 	var taper := 1.0
 	if charge >= BOOST_CHARGE_KNEE:
 		var f := (charge - BOOST_CHARGE_KNEE) / (1.0 - BOOST_CHARGE_KNEE)
 		taper = lerpf(1.0, BOOST_CHARGE_TOP_FACTOR, f)
-	return minf(charge + BOOST_CHARGE_RATE * taper * delta, 1.0)
+	# Slow base fill, faster the more sideways the car is (bigger slip angle).
+	var angle01 := clampf(absf(slip_deg) / BOOST_CHARGE_ANGLE_REF_DEG, 0.0, 1.0)
+	var rate := BOOST_CHARGE_RATE + BOOST_CHARGE_ANGLE_RATE * angle01
+	return minf(charge + rate * taper * delta, 1.0)
 
-func _update_boost_fsm(forward_dir: Vector3, speed: float, drifting: bool, delta: float, grounded: bool = true) -> void:
+func _update_boost_fsm(forward_dir: Vector3, speed: float, drifting: bool, slip_deg: float, delta: float, grounded: bool = true) -> void:
 	# Charge accumulates whenever drifting (the state), however entered — even a
 	# slid-in drift with no key held. Arms when the drift ends. Mirrors lobby.rs.
 	if grounded and drifting and speed > DRIFT_MIN_SPEED:
-		drift_charge = _boost_charge_increment(drift_charge, delta)
+		drift_charge = _boost_charge_increment(drift_charge, slip_deg, delta)
 	elif _boost_state != BoostState.PENDING:
 		drift_charge = maxf(drift_charge - BOOST_CHARGE_DECAY * delta, 0.0)
 

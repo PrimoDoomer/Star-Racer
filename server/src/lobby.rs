@@ -169,9 +169,14 @@ impl PhysicsWorld {
 // together so handling FEEL (accel curve, wash-out point, drift) is preserved at
 // half pace. Damping, yaw rates and slip angles are unchanged (turning is
 // independent of forward speed; tighter turning at lower speed fits the tracks).
-const THROTTLE_FORCE: f64 = 8_500.0;
-const REVERSE_FORCE: f64 = 2_500.0;
-const BRAKE_FORCE: f64 = 4_000.0;
+// Master pace multiplier: the drive/brake forces, launch & boost speeds and the
+// lateral-grip caps all derive from this single knob, so scaling the whole game's
+// speed (and matching acceleration/grip) is one edit. ×1.0 = the tuned baseline;
+// ×4/3 bumps the pace by a third. MUST match player.gd.
+const SPEED_SCALE: f64 = 4.0 / 3.0;
+const THROTTLE_FORCE: f64 = 8_500.0 * SPEED_SCALE;
+const REVERSE_FORCE: f64 = 2_500.0 * SPEED_SCALE;
+const BRAKE_FORCE: f64 = 4_000.0 * SPEED_SCALE;
 const BRAKE_MIN_SPEED: f64 = 0.5;
 const MAX_TURN_RATE_GRIP: f64 = 1.2;
 const MAX_TURN_RATE_DRIFT: f64 = 2.4; // softer than before (was 3.2): a gentler rotation
@@ -186,11 +191,11 @@ const STEER_P_GAIN: f64 = 25_000.0;
 // controllable. Past SLIP_BREAK on grip the car "falls into" the drift STATE (see
 // the drift-state machine in step()): blend rises, lat_accel drops to drift's — a
 // graceful slide, not a punishing spin.
-const GRIP_LAT_ACCEL: f64 = 9.0; // m/s² — holds gentle/slow turns, washes at speed
-const DRIFT_LAT_ACCEL: f64 = 3.0; // m/s² — low, so the drift slide lags and lives
-                                  // Falling into the drift state couples ANGLE and EFFORT (see drift_enter_threshold_deg):
-                                  // gentle steering must build the full SLIP_BREAK_DEG of slide, but cranking hard at
-                                  // speed drops the bar to SLIP_BREAK_HARD_DEG — you snap into a drift almost at once.
+const GRIP_LAT_ACCEL: f64 = 9.0 * SPEED_SCALE; // m/s² — holds gentle/slow turns, washes at speed
+const DRIFT_LAT_ACCEL: f64 = 3.0 * SPEED_SCALE; // m/s² — low, so the drift slide lags and lives
+                                                // Falling into the drift state couples ANGLE and EFFORT (see drift_enter_threshold_deg):
+                                                // gentle steering must build the full SLIP_BREAK_DEG of slide, but cranking hard at
+                                                // speed drops the bar to SLIP_BREAK_HARD_DEG — you snap into a drift almost at once.
 const SLIP_BREAK_DEG: f64 = 18.0; // gentle steering: slip needed to fall into drift
 const SLIP_BREAK_HARD_DEG: f64 = 5.0; // full lock at speed: falls in almost at once
 const DRIFT_EFFORT_SPEED_REF: f64 = 6.0; // speed (m/s) at which the effort term saturates
@@ -213,28 +218,33 @@ const NORMAL_LINEAR_DAMPING: f64 = 0.3;
 const DRIFT_LINEAR_DAMPING: f64 = 0.18;
 const DRIFT_MIN_SPEED: f64 = 1.5;
 
-// Cruise speed is THROTTLE_FORCE / (mass·damping) = 8500 / (1000·0.3) ≈ 28 m/s.
+// Cruise speed is THROTTLE_FORCE / (mass·damping) = 8500·SPEED_SCALE / (1000·0.3).
 // The launch (rocket start) is server-authoritative: when throttle is first down at
 // GO, the car is propelled to LAUNCH_SPEED·quality, where quality falls off over
 // LAUNCH_WINDOW. A perfect launch slightly OVERSHOOTS cruise (a real head start) —
 // the old client-only bonus only reached ~half cruise, so it felt like a slowdown.
 const LAUNCH_WINDOW: f64 = 0.25; // seconds after GO; quality = 1 - t/window (held at GO = 1.0) — tight: nailing 100% is precise
-const LAUNCH_SPEED: f64 = 32.0; // perfect-launch speed (≈ cruise + overshoot)
+const LAUNCH_SPEED: f64 = 32.0 * SPEED_SCALE; // perfect-launch speed (≈ cruise + overshoot)
 const PAD_BOOST_SCALE: f64 = 0.5; // scales track pad-boost strengths to the halved speeds
 
 // Charge fills the bar at full rate up to BOOST_CHARGE_KNEE (~2/3), then tapers to
 // BOOST_CHARGE_TOP_FACTOR of that rate as it approaches full — so maxing the bar
 // takes a long, committed drift. See boost_charge_increment (mirrored in player.gd).
-const BOOST_CHARGE_RATE: f64 = 0.45; // slower base fill (was 1.0): the whole bar takes much longer
+// Base fill is slow; the angle term adds up to BOOST_CHARGE_ANGLE_RATE more as the
+// slip angle approaches BOOST_CHARGE_ANGLE_REF_DEG — so a big, committed slide
+// charges fast while a shallow drift barely fills. See boost_charge_increment.
+const BOOST_CHARGE_RATE: f64 = 0.18; // slow base fill
+const BOOST_CHARGE_ANGLE_RATE: f64 = 0.6; // extra fill rate at a full-angle slide
+const BOOST_CHARGE_ANGLE_REF_DEG: f64 = 35.0; // slip angle (°) at which the angle term saturates
 const BOOST_CHARGE_KNEE: f64 = 0.667; // first 2/3 fill normally
 const BOOST_CHARGE_TOP_FACTOR: f64 = 0.25; // last third is degressive (down to 25% rate)
 const BOOST_CHARGE_DECAY: f64 = 2.0;
 const BOOST_CHARGE_MIN: f64 = 0.15;
-const BOOST_PEAK_BONUS: f64 = 11.5; // drift-boost overshoot above cruise (halved with speed)
+const BOOST_PEAK_BONUS: f64 = 11.5 * SPEED_SCALE; // drift-boost overshoot above cruise
 const BOOST_DURATION: f64 = 1.5;
 const BOOST_ALIGN_THRESHOLD_COS: f64 = 0.9781476; // cos(12°)
 const BOOST_PENDING_TIMEOUT: f64 = 1.5;
-const BOOST_SUSTAIN_FORCE: f64 = 16_500.0; // halved with the drive force
+const BOOST_SUSTAIN_FORCE: f64 = 16_500.0 * SPEED_SCALE; // scales with the drive force
 
 /// Six visually distinct car tints, handed out by lobby slot index so every
 /// racer in a lobby gets a unique colour, kept for as long as they hold the slot.
@@ -291,14 +301,17 @@ enum BoostState {
 /// One tick of drift-boost charge: full rate over the first ~2/3 of the bar, then
 /// tapering through the final third so topping it off demands a long, sustained
 /// drift. Mirrored verbatim in player.gd.
-fn boost_charge_increment(charge: f64, delta: f64) -> f64 {
+fn boost_charge_increment(charge: f64, slip_deg: f64, delta: f64) -> f64 {
     let taper = if charge < BOOST_CHARGE_KNEE {
         1.0
     } else {
         let f = (charge - BOOST_CHARGE_KNEE) / (1.0 - BOOST_CHARGE_KNEE);
         1.0 + (BOOST_CHARGE_TOP_FACTOR - 1.0) * f
     };
-    (charge + BOOST_CHARGE_RATE * taper * delta).min(1.0)
+    // Slow base fill, faster the more sideways the car is (bigger slip angle).
+    let angle01 = (slip_deg.abs() / BOOST_CHARGE_ANGLE_REF_DEG).clamp(0.0, 1.0);
+    let rate = BOOST_CHARGE_RATE + BOOST_CHARGE_ANGLE_RATE * angle01;
+    (charge + rate * taper * delta).min(1.0)
 }
 
 fn update_boost_fsm(
@@ -306,13 +319,14 @@ fn update_boost_fsm(
     rb: &mut rapier3d_f64::prelude::RigidBody,
     forward_dir: &Vec3,
     speed: f64,
+    slip_deg: f64,
     delta: f64,
     grounded: bool,
 ) {
     // Charge accumulates whenever DRIFTING (the state), however it was entered —
     // even a slid-in drift with no key held. Decays otherwise. Grounded only.
     if grounded && racer.drift_state && speed > DRIFT_MIN_SPEED {
-        racer.boost_charge = boost_charge_increment(racer.boost_charge, delta);
+        racer.boost_charge = boost_charge_increment(racer.boost_charge, slip_deg, delta);
     } else if racer.boost_state != BoostState::Pending {
         racer.boost_charge = (racer.boost_charge - BOOST_CHARGE_DECAY * delta).max(0.0);
     }
@@ -1022,7 +1036,15 @@ impl Lobby {
 
             // Boost FSM update — pass horizontal forward so re-alignment detection
             // and the boost impulse stay in the ground plane.
-            update_boost_fsm(racer, rb, &horiz_forward, speed, delta, grounded);
+            update_boost_fsm(
+                racer,
+                rb,
+                &horiz_forward,
+                speed,
+                slip.to_degrees(),
+                delta,
+                grounded,
+            );
             racer.prev_star_drift = racer.input.star_drift;
             racer.prev_drift_state = racer.drift_state;
         }

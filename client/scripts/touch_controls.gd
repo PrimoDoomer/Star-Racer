@@ -41,6 +41,11 @@ const DRIFT_FRAC  := 0.5        # lower half of the pad is the drift sub-zone
 # inside the visual pad, so sliding past its edge never drops the gaze on it.
 const CAPTURE_TOP_FRAC := 0.25  # ignore the top quarter (nothing to grab there)
 
+# Discreet "menu" button (top-right) — opens the pause panel on touch, since there's
+# no Esc/Start key on a phone. The panel's own Resume/Leave buttons close it.
+const MENU_BTN_SIZE   := Vector2(112.0, 56.0)
+const MENU_BTN_MARGIN := 18.0
+
 const MOUSE_ID := -2            # synthetic pointer id for desktop mouse testing
 
 # Force the overlay on a non-touch desktop (toggle with F10 in debug builds).
@@ -120,6 +125,9 @@ func _input(event: InputEvent) -> void:
 # --- Pointer tracking -------------------------------------------------------
 
 func _pointer_down(id: int, pos: Vector2) -> void:
+	if _menu_btn_rect().has_point(pos):
+		_open_pause_menu()
+		return
 	var mid := size.x * 0.5
 	var top := size.y * CAPTURE_TOP_FRAC
 	if pos.y < top:
@@ -198,11 +206,36 @@ func _drift_line() -> float:
 	var r := _pad_rect()
 	return r.position.y + r.size.y * (1.0 - DRIFT_FRAC)
 
+func _menu_btn_rect() -> Rect2:
+	return Rect2(size.x - MENU_BTN_MARGIN - MENU_BTN_SIZE.x, MENU_BTN_MARGIN, MENU_BTN_SIZE.x, MENU_BTN_SIZE.y)
+
+# Open the pause panel (mirrors the Pause action): freeze the car and show the
+# play menu, whose own Resume/Leave buttons take over from here.
+func _open_pause_menu() -> void:
+	if _game == null:
+		return
+	_game.paused = true
+	var panel := _game.get_node_or_null("UI/PlayMenuPanel")
+	if panel:
+		panel.visible = true
+
 # --- Drawing ----------------------------------------------------------------
 
 func _draw() -> void:
 	_draw_stick()
 	_draw_pad()
+	_draw_menu_button()
+
+func _draw_menu_button() -> void:
+	var r := _menu_btn_rect()
+	draw_rect(r, PANEL_BG, true)
+	draw_rect(r, PANEL_LINE, false, 2.0)
+	var cx := r.position.x + r.size.x * 0.5
+	var cy := r.position.y + r.size.y * 0.5
+	var hw := r.size.x * 0.26
+	for i in 3:
+		var yy := cy + (float(i) - 1.0) * 8.0
+		draw_line(Vector2(cx - hw, yy), Vector2(cx + hw, yy), TEXT_DIM, 3.0)
 
 func _draw_stick() -> void:
 	var anchor: Vector2
