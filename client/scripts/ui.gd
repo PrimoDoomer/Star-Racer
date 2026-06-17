@@ -742,6 +742,9 @@ func _process(_delta: float) -> void:
 	if %Game.mode == Game.Mode.IN_RACE or %Game.mode == Game.Mode.SPECTATOR:
 		if Input.is_action_just_released("Pause"):
 			self.play_menu_panel.visible = ! self.play_menu_panel.visible
+			# Focus the panel on open so a controller's D-pad can navigate it.
+			if self.play_menu_panel.visible:
+				($PlayMenuPanel/PlayMenu/BackToRaceButton as Button).grab_focus()
 
 func switch_mode(next_mode: Game.Mode, server_up: bool):
 	if %Game.mode == Game.Mode.WELCOME_PAGE:
@@ -774,6 +777,9 @@ func switch_mode(next_mode: Game.Mode, server_up: bool):
 				_set_status(tr("lobbies_fetched"), StatusKind.INFO)
 				self.join_button.disabled = false
 				self.create_button.disabled = (_track_picker == null) or (_track_picker.item_count == 0) or _track_picker.disabled
+		# Controller: make sure a widget holds focus so the D-pad can navigate.
+		if get_viewport().gui_get_focus_owner() == null:
+			self.join_tab_button.grab_focus()
 	elif next_mode == Game.Mode.LOBBY_INTERMISSION:
 		self.back_button.grab_focus()
 		for child in self.players_in_lobby.get_children():

@@ -64,7 +64,11 @@ func _touch_mode() -> bool:
 func _is_active() -> bool:
 	if _game == null:
 		return false
-	return _game.mode == Game.Mode.IN_RACE and not _game.paused and _touch_mode()
+	# Visible as soon as we're on the track — including the pre-race lobby /
+	# countdown, so a mobile player sees the controls on entering and can hold
+	# throttle for the rocket-start.
+	var on_track: bool = _game.mode == Game.Mode.IN_RACE or _game.mode == Game.Mode.LOBBY_INTERMISSION
+	return on_track and not _game.paused and _touch_mode()
 
 func _process(_delta: float) -> void:
 	var active := _is_active()
