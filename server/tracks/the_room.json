@@ -1,0 +1,195 @@
+{
+  "id": "the_room",
+  "name": "The Living Room",
+  "laps_to_win": 3,
+  "environment": "living_room",
+  "gates": [
+    {
+      "role": "start_finish",
+      "position": [177.0, 2.0, 150.0],
+      "rotation_deg": [0.0, 0.0, 0.0],
+      "half_width": 65.0
+    },
+    {
+      "role": "checkpoint",
+      "position": [-177.0, 6.0, -150.0],
+      "rotation_deg": [0.0, 180.0, 0.0],
+      "half_width": 65.0
+    }
+  ],
+  "primitives": [
+    {
+      "type": "decor", "name": "floor", "model": "panel", "collide": true,
+      "size": [514.0, 8.0, 484.0], "position": [0.0, -4.0, 0.0],
+      "color": [0.60, 0.42, 0.26]
+    },
+    {
+      "type": "decor", "name": "rug_start", "model": "rug", "collide": false,
+      "size": [210.0, 1.6, 150.0], "position": [177.0, 0.8, 150.0],
+      "color": [0.55, 0.20, 0.22]
+    },
+    {
+      "type": "decor", "name": "rug_far", "model": "rug", "collide": false,
+      "size": [210.0, 1.6, 150.0], "position": [-177.0, 0.8, -150.0],
+      "color": [0.24, 0.34, 0.30]
+    },
+
+    {
+      "type": "decor", "name": "wall_west", "model": "panel", "collide": true,
+      "size": [24.0, 300.0, 508.0], "position": [-257.0, 150.0, 0.0],
+      "color": [0.86, 0.83, 0.78]
+    },
+    {
+      "type": "decor", "name": "wall_east", "model": "panel", "collide": true,
+      "size": [24.0, 300.0, 508.0], "position": [257.0, 150.0, 0.0],
+      "color": [0.86, 0.83, 0.78]
+    },
+    {
+      "type": "decor", "name": "wall_north", "model": "panel", "collide": true,
+      "size": [538.0, 300.0, 24.0], "position": [0.0, 150.0, -242.0],
+      "color": [0.82, 0.80, 0.86]
+    },
+    {
+      "type": "decor", "name": "wall_south", "model": "panel", "collide": true,
+      "size": [538.0, 300.0, 24.0], "position": [0.0, 150.0, 242.0],
+      "color": [0.82, 0.80, 0.86]
+    },
+
+    {
+      "type": "decor", "name": "baseboard_west", "model": "panel", "collide": false,
+      "size": [10.0, 24.0, 484.0], "position": [-243.0, 12.0, 0.0],
+      "color": [0.95, 0.93, 0.90]
+    },
+    {
+      "type": "decor", "name": "baseboard_east", "model": "panel", "collide": false,
+      "size": [10.0, 24.0, 484.0], "position": [243.0, 12.0, 0.0],
+      "color": [0.95, 0.93, 0.90]
+    },
+    {
+      "type": "decor", "name": "baseboard_north", "model": "panel", "collide": false,
+      "size": [490.0, 24.0, 10.0], "position": [0.0, 12.0, -228.0],
+      "color": [0.95, 0.93, 0.90]
+    },
+    {
+      "type": "decor", "name": "baseboard_south", "model": "panel", "collide": false,
+      "size": [490.0, 24.0, 10.0], "position": [0.0, 12.0, 228.0],
+      "color": [0.95, 0.93, 0.90]
+    },
+
+    {
+      "type": "decor", "name": "island_sofa", "model": "sofa", "collide": true,
+      "size": [230.0, 95.0, 95.0], "position": [0.0, 47.0, -110.0],
+      "color": [0.36, 0.46, 0.62]
+    },
+    {
+      "type": "decor", "name": "island_credenza", "model": "panel", "collide": true,
+      "size": [230.0, 82.0, 90.0], "position": [0.0, 41.0, 110.0],
+      "color": [0.50, 0.34, 0.20]
+    },
+    {
+      "type": "decor", "name": "island_books_w", "model": "book_stack", "collide": true,
+      "size": [80.0, 92.0, 150.0], "position": [-95.0, 46.0, 0.0],
+      "color": [0.72, 0.30, 0.32]
+    },
+    {
+      "type": "decor", "name": "island_block_e", "model": "block", "collide": true,
+      "size": [90.0, 92.0, 150.0], "position": [95.0, 46.0, 0.0],
+      "color": [0.90, 0.74, 0.20]
+    },
+
+    {
+      "type": "decor", "name": "plant_ne", "model": "plant", "collide": false,
+      "size": [78.0, 124.0, 78.0], "position": [210.0, 62.0, -200.0],
+      "color": [0.26, 0.55, 0.30]
+    },
+    {
+      "type": "decor", "name": "plant_sw", "model": "plant", "collide": false,
+      "size": [78.0, 124.0, 78.0], "position": [-210.0, 62.0, 200.0],
+      "color": [0.26, 0.55, 0.30]
+    },
+    {
+      "type": "decor", "name": "lamp_nw", "model": "lamp", "collide": false,
+      "size": [86.0, 168.0, 86.0], "position": [-205.0, 84.0, -200.0],
+      "color": [0.94, 0.86, 0.62]
+    },
+    {
+      "type": "decor", "name": "mug_se", "model": "mug", "collide": false,
+      "size": [72.0, 84.0, 72.0], "position": [205.0, 42.0, 150.0],
+      "color": [0.30, 0.55, 0.75]
+    },
+
+    {
+      "type": "decor", "name": "chicane_die", "model": "dice", "collide": false,
+      "size": [74.0, 74.0, 74.0], "position": [0.0, 37.0, 198.0],
+      "color": [0.95, 0.95, 0.93]
+    },
+    {
+      "type": "decor", "name": "chicane_mug", "model": "mug", "collide": false,
+      "size": [72.0, 84.0, 72.0], "position": [40.0, 42.0, -198.0],
+      "color": [0.85, 0.45, 0.30]
+    },
+    {
+      "type": "decor", "name": "chicane_ball", "model": "ball", "collide": false,
+      "size": [58.0, 58.0, 58.0], "position": [-120.0, 29.0, 196.0],
+      "color": [0.90, 0.32, 0.34]
+    },
+
+    {
+      "type": "decor", "name": "book_floor_e", "model": "book", "collide": false,
+      "size": [64.0, 15.0, 44.0], "position": [222.0, 7.5, 60.0],
+      "rotation_deg": [0.0, 22.0, 0.0], "color": [0.30, 0.50, 0.70]
+    },
+    {
+      "type": "decor", "name": "book_floor_w", "model": "book", "collide": false,
+      "size": [64.0, 15.0, 44.0], "position": [-222.0, 7.5, -60.0],
+      "rotation_deg": [0.0, -16.0, 0.0], "color": [0.72, 0.52, 0.22]
+    },
+    {
+      "type": "decor", "name": "eraser_n", "model": "eraser", "collide": false,
+      "size": [46.0, 20.0, 26.0], "position": [150.0, 10.0, -208.0],
+      "rotation_deg": [0.0, 12.0, 0.0], "color": [0.93, 0.50, 0.62]
+    },
+    {
+      "type": "decor", "name": "crayon_corner", "model": "crayon", "collide": false,
+      "size": [20.0, 96.0, 20.0], "position": [232.0, 48.0, 210.0],
+      "color": [0.40, 0.70, 0.45]
+    },
+
+    {
+      "type": "decor", "name": "start_arch", "model": "arch", "collide": false,
+      "size": [130.0, 96.0, 14.0], "position": [177.0, 48.0, 150.0],
+      "rotation_deg": [0.0, 0.0, 0.0], "color": [0.95, 0.40, 0.30]
+    },
+    {
+      "type": "decor", "name": "far_arch", "model": "arch", "collide": false,
+      "size": [130.0, 96.0, 14.0], "position": [-177.0, 48.0, -150.0],
+      "rotation_deg": [0.0, 0.0, 0.0], "color": [0.40, 0.62, 0.92]
+    },
+
+    {
+      "type": "pad", "name": "boost_right", "boost_strength": 24.0,
+      "size": [72.0, 2.0, 64.0], "position": [177.0, 0.0, 20.0],
+      "rotation_deg": [0.0, 0.0, 0.0], "heading": [0.0, 0.0, -1.0]
+    },
+    {
+      "type": "pad", "name": "boost_left", "boost_strength": 24.0,
+      "size": [72.0, 2.0, 64.0], "position": [-177.0, 0.0, -20.0],
+      "rotation_deg": [0.0, 180.0, 0.0], "heading": [0.0, 0.0, 1.0]
+    }
+  ],
+  "centerline": [
+    [177.0, 150.0],
+    [177.0, 0.0],
+    [177.0, -150.0],
+    [120.0, -195.0],
+    [0.0, -205.0],
+    [-120.0, -195.0],
+    [-177.0, -150.0],
+    [-177.0, 0.0],
+    [-177.0, 150.0],
+    [-120.0, 195.0],
+    [0.0, 205.0],
+    [120.0, 195.0],
+    [177.0, 150.0]
+  ]
+}
