@@ -1603,7 +1603,7 @@ mod tests {
     }
 
     fn test_track() -> Arc<TrackDef> {
-        let raw = include_str!("../tracks/aurora_circuit.json");
+        let raw = include_str!("../tracks/circuit_simple.json");
         Arc::new(TrackDef::from_json(raw).expect("test track parses"))
     }
 

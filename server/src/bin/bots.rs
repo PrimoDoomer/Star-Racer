@@ -515,7 +515,7 @@ async fn spawn_lobby(
 
     hdls.push(launch_bot(BotConfig {
         lobby_id,
-        track_id: "aurora_circuit",
+        track_id: "circuit_simple",
         mode: modes[0],
         create: true,
         min_players,
@@ -528,7 +528,7 @@ async fn spawn_lobby(
     for &mode in &modes[1..] {
         hdls.push(launch_bot(BotConfig {
             lobby_id,
-            track_id: "aurora_circuit",
+            track_id: "circuit_simple",
             mode,
             create: false,
             min_players: 0,

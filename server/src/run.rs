@@ -591,7 +591,7 @@ mod tests {
     #[test]
     fn build_lobby_list_maps_each_lobby_to_info() {
         let track = Arc::new(
-            crate::track::TrackDef::from_json(include_str!("../tracks/aurora_circuit.json"))
+            crate::track::TrackDef::from_json(include_str!("../tracks/circuit_simple.json"))
                 .unwrap(),
         );
         let track_name = track.name.clone();

@@ -407,21 +407,6 @@ mod tests {
     }
 
     #[test]
-    fn embedded_aurora_circuit_parses() {
-        let raw = include_str!("../tracks/aurora_circuit.json");
-        let track = TrackDef::from_json(raw).expect("aurora_circuit.json must parse");
-        assert_eq!(track.id, "aurora_circuit");
-        assert!(track
-            .primitives
-            .iter()
-            .any(|p| p.kind == PrimitiveKind::Floor));
-        assert!(track
-            .primitives
-            .iter()
-            .any(|p| p.kind == PrimitiveKind::Wall));
-    }
-
-    #[test]
     fn embedded_circuit_simple_parses_with_arc_and_decor() {
         let raw = include_str!("../tracks/circuit_simple.json");
         let track = TrackDef::from_json(raw).expect("circuit_simple.json must parse");
