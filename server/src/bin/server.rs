@@ -1,5 +1,5 @@
 use colored::Colorize;
-use star_racer_server::tracks_dir;
+use pocket_racing_server::tracks_dir;
 use std::{
     io::Write,
     path::PathBuf,
@@ -16,7 +16,7 @@ pub fn log_init() {
         .parse_default_env();
     let builder = binding.format(move |buf, record| {
         let target_str = record.target();
-        if !target_str.contains("star_racer") {
+        if !target_str.contains("pocket_racing") {
             return write!(buf, "");
         }
 
@@ -66,7 +66,7 @@ async fn main() -> anyhow::Result<()> {
     // Wrap in a hot-swappable handle so the reload watcher (spawned in `run`) can
     // pick up added/edited circuits without a restart.
     let shared = Arc::new(RwLock::new(Arc::new(tracks)));
-    star_racer_server::run::run(8080, shared, tracks_path).await?;
+    pocket_racing_server::run::run(8080, shared, tracks_path).await?;
 
     anyhow::Ok(())
 }

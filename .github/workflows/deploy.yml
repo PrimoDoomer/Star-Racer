@@ -122,7 +122,7 @@ jobs:
           rsync -a --delete -e "ssh -i ~/.ssh/upload_key" \
             dist/ deploy@${{ secrets.DEPLOY_HOST }}:
 
-      # The forced command on the server side only accepts "star-racer-deploy":
+      # The forced command on the server side only accepts "pocket-racing-deploy":
       # it installs binaries, syncs tracks + web root and restarts both services.
       - name: Trigger deploy
         run: ssh -i ~/.ssh/deploy_key deploy@${{ secrets.DEPLOY_HOST }} pocket-racing-deploy

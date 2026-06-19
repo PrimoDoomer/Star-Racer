@@ -94,7 +94,7 @@ func _tick_orbital(delta: float) -> void:
 func _tick_yaw(delta: float) -> void:
 	var target_yaw := self._car.global_rotation.y + self._orb_yaw
 
-	var drifting := Input.is_action_pressed("Star Drift") and self._car.linear_velocity.length() > 3.0
+	var drifting := Input.is_action_pressed("Drift") and self._car.linear_velocity.length() > 3.0
 	# Ease the follow-rate toward grip/drift instead of snapping it on enter/exit.
 	self._drift_blend = lerpf(self._drift_blend, 1.0 if drifting else 0.0, clamp(DRIFT_CAM_BLEND_RATE * delta, 0.0, 1.0))
 	var rate := lerpf(YAW_RATE_GRIP, YAW_RATE_DRIFT, self._drift_blend)

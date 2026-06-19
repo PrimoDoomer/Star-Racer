@@ -87,7 +87,7 @@ enum BoostState { IDLE, PENDING, BOOSTING }
 
 var drift_charge: float = 0.0
 var boost_flash: bool = false
-var _was_star_drift_pressed := false
+var _was_drift_pressed := false
 var _was_drift_state := false
 var _boost_state: int = BoostState.IDLE
 var _boost_t_remaining: float = 0.0
@@ -218,7 +218,7 @@ func _physics_process(delta: float) -> void:
 	var steer_raw := Input.get_axis("Steering Left", "Steering Right")
 	_steer_input = move_toward(_steer_input, steer_raw, STEER_SMOOTH_RATE * delta)
 	var steer := _steer_input
-	var star_drift_input := Input.is_action_pressed("Star Drift")
+	var drift_input := Input.is_action_pressed("Drift")
 
 	var speed := self.linear_velocity.length()
 
@@ -249,7 +249,7 @@ func _physics_process(delta: float) -> void:
 	# then eases toward this state. Mirrors the server (lobby.rs).
 	var enter_thresh := _drift_enter_threshold_deg(absf(steer), speed)
 	var drift_capable := grounded and speed > DRIFT_MIN_SPEED
-	if drift_capable and (star_drift_input or slip_mag > enter_thresh):
+	if drift_capable and (drift_input or slip_mag > enter_thresh):
 		_drift_state = true
 	elif not drift_capable or slip_mag < SLIP_EXIT_DEG:
 		_drift_state = false
@@ -263,7 +263,7 @@ func _physics_process(delta: float) -> void:
 		self._reversing = false
 	elif throttle:
 		self._reversing = false  # throttle while nearly stopped → go forward
-	elif star_drift_input and not throttle:
+	elif drift_input and not throttle:
 		self._reversing = true
 
 	if grounded:
@@ -272,7 +272,7 @@ func _physics_process(delta: float) -> void:
 		if not throttle and self._reversing:
 			apply_central_force(-forward_dir * REVERSE_FORCE)
 
-		if star_drift_input and not throttle and forward_speed > BRAKE_MIN_SPEED:
+		if drift_input and not throttle and forward_speed > BRAKE_MIN_SPEED:
 			var bv := self.linear_velocity
 			if bv.length() > 0.01:
 				apply_central_force(-bv.normalized() * BRAKE_FORCE)
@@ -286,7 +286,7 @@ func _physics_process(delta: float) -> void:
 
 	# Manual-drift flick: drift key + a direction together snaps the yaw rate hard at
 	# once (a sharp deliberate turn-in). Press edge only. Mirrors the server (lobby.rs).
-	var drift_just_pressed := star_drift_input and not _was_star_drift_pressed
+	var drift_just_pressed := drift_input and not _was_drift_pressed
 	if drift_just_pressed and grounded and speed > DRIFT_MIN_SPEED and absf(effective_steer) > 0.1:
 		var av := self.angular_velocity
 		av.y = -signf(effective_steer) * DRIFT_FLICK_RATE
@@ -314,7 +314,7 @@ func _physics_process(delta: float) -> void:
 	# Boost FSM (mirrors server) — uses horizontal forward. Sustain force only
 	# applies while grounded.
 	_update_boost_fsm(horiz_forward, speed, _drift_state, slip_mag, delta, grounded)
-	_was_star_drift_pressed = star_drift_input
+	_was_drift_pressed = drift_input
 	_was_drift_state = _drift_state
 
 	_tick_audio(speed, throttle, _drift_state, true, delta)
@@ -356,7 +356,7 @@ func _physics_process(delta: float) -> void:
 				"throttle":    throttle,
 				"steer_left":  max(-steer, 0.0),
 				"steer_right": max(steer, 0.0),
-				"star_drift":  star_drift_input
+				"drift":       drift_input
 			}
 		})
 

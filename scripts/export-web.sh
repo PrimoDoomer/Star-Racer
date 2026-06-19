@@ -12,8 +12,8 @@
 #                   Export templates MUST match the editor version exactly.
 #   OUT             Output directory (default: <repo>/build/web). The positional
 #                   argument takes precedence over $OUT.
-#   STAR_RACER_CACHE Disk dir for the downloaded Godot binary, the template
-#                   bundle, and all temp work (default: $HOME/.cache/star-racer-
+#   POCKET_RACING_CACHE Disk dir for the downloaded Godot binary, the template
+#                   bundle, and all temp work (default: $HOME/.cache/pocket-racing-
 #                   godot). Point it at a real-disk path — never tmpfs. The
 #                   script forces $TMPDIR here so /tmp (often tmpfs on cloud VMs)
 #                   is not used.
@@ -31,9 +31,9 @@ PRESET="Web"
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CLIENT_DIR="$REPO_ROOT/client"
 OUT_DIR="${1:-${OUT:-$REPO_ROOT/build/web}}"
-# Cache lives on real disk (under $HOME). Override with STAR_RACER_CACHE if $HOME
+# Cache lives on real disk (under $HOME). Override with POCKET_RACING_CACHE if $HOME
 # is small/elsewhere. Must NOT point at tmpfs.
-CACHE_DIR="${STAR_RACER_CACHE:-${XDG_CACHE_HOME:-$HOME/.cache}/star-racer-godot}"
+CACHE_DIR="${POCKET_RACING_CACHE:-${XDG_CACHE_HOME:-$HOME/.cache}/pocket-racing-godot}"
 
 # Force all temp writes onto disk, not /tmp. On small cloud instances /tmp is
 # usually tmpfs (RAM-backed, capped at ~half the RAM) and fills long before the

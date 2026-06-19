@@ -908,6 +908,30 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a89322df9ebe1c1578d689c92318e070967d1042b512afbe49518723f4e6d5cd"
 
 [[package]]
+name = "pocket-racing-server"
+version = "1.0.0"
+dependencies = [
+ "anyhow",
+ "cgmath",
+ "chrono",
+ "colored",
+ "crossbeam",
+ "env_logger",
+ "futures-util",
+ "log",
+ "nalgebra",
+ "rand 0.10.1",
+ "rapier3d-f64",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "tokio-tungstenite",
+ "tungstenite",
+ "windows-sys",
+]
+
+[[package]]
 name = "portable-atomic"
 version = "1.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1265,30 +1289,6 @@ name = "stable_deref_trait"
 version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6ce2be8dc25455e1f91df71bfa12ad37d7af1092ae736f3a6cd0e37bc7810596"
-
-[[package]]
-name = "star-racer-server"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "cgmath",
- "chrono",
- "colored",
- "crossbeam",
- "env_logger",
- "futures-util",
- "log",
- "nalgebra",
- "rand 0.10.1",
- "rapier3d-f64",
- "serde",
- "serde_json",
- "thiserror",
- "tokio",
- "tokio-tungstenite",
- "tungstenite",
- "windows-sys",
-]
 
 [[package]]
 name = "static_assertions"

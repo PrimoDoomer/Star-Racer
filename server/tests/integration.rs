@@ -1,5 +1,5 @@
 use futures_util::{SinkExt, StreamExt};
-use star_racer_server::{
+use pocket_racing_server::{
     protocol::{
         ClientMessage, ColorProto, JoinError, LobbyInfo, RequestMessage, Response, ServerMessage,
     },
@@ -523,7 +523,7 @@ async fn state_message_on_pre_join_socket_closes_connection() {
         throttle: true,
         steer_left: 0.0,
         steer_right: 0.0,
-        star_drift: false,
+        drift: false,
     };
     ws.send(Message::Text(serde_json::to_string(&msg).unwrap().into()))
         .await

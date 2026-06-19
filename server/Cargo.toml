@@ -1,6 +1,6 @@
 [package]
-name = "star-racer-server"
-version = "0.1.0"
+name = "pocket-racing-server"
+version = "1.0.0"
 edition = "2021"
 
 [lib]

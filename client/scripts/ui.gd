@@ -64,8 +64,8 @@ const ACCENT_BRIGHT := Color(1.0, 0.78, 0.36)
 # App identity. Moved off the main page into the About panel.
 const APP_VERSION := "v1.0.0 rc"
 const APP_BUILD := "2026-06-16"
-const APP_REPO := "PrimoDoomer/Star-Racer"
-const APP_REPO_URL := "https://github.com/PrimoDoomer/Star-Racer"
+const APP_REPO := "pagoyadev/Pocket-Racing"
+const APP_REPO_URL := "https://github.com/pagoyadev/Pocket-Racing"
 
 # Status-message severities, driving the info pill's colour.
 enum StatusKind { INFO, LOADING, SUCCESS, ERROR }

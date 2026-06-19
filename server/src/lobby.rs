@@ -291,7 +291,7 @@ struct PlayerInput {
     throttle: bool,
     steer_left: f64,
     steer_right: f64,
-    star_drift: bool,
+    drift: bool,
 }
 
 #[derive(Default, Clone, Copy, PartialEq)]
@@ -384,14 +384,14 @@ fn update_boost_fsm(
 fn update_reverse_mode(
     was_reversing: bool,
     forward_speed: f64,
-    star_drift: bool,
+    drift: bool,
     throttle: bool,
 ) -> bool {
     if forward_speed <= -MOTION_DIRECTION_EPSILON {
         true
     } else if forward_speed >= MOTION_DIRECTION_EPSILON || throttle {
         false
-    } else if star_drift {
+    } else if drift {
         true
     } else {
         was_reversing
@@ -540,7 +540,7 @@ pub(crate) struct Racer {
     idx: u8,
     rigid_body: RigidBodyHandle,
     input: PlayerInput,
-    prev_star_drift: bool,
+    prev_drift: bool,
     prev_drift_state: bool,
     launch_done: bool,
     // Signed time (s) of the player's first throttle press relative to GO (negative
@@ -582,7 +582,7 @@ impl Racer {
             idx,
             rigid_body: handle,
             input: PlayerInput::default(),
-            prev_star_drift: false,
+            prev_drift: false,
             prev_drift_state: false,
             launch_done: false,
             launch_press_offset: None,
@@ -893,7 +893,7 @@ impl Lobby {
                         throttle,
                         steer_left,
                         steer_right,
-                        star_drift,
+                        drift,
                     }) => {
                         sr_log!(
                             trace,
@@ -903,13 +903,13 @@ impl Lobby {
                             throttle,
                             steer_left,
                             steer_right,
-                            star_drift
+                            drift
                         );
                         racer.input = PlayerInput {
                             throttle,
                             steer_left,
                             steer_right,
-                            star_drift,
+                            drift,
                         };
                     }
                     PlayerEvent::Message(_) => {}
@@ -1004,7 +1004,7 @@ impl Lobby {
             let steer_effort = (racer.input.steer_right - racer.input.steer_left).abs();
             let enter_thresh = drift_enter_threshold_deg(steer_effort, speed).to_radians();
             let drift_capable = grounded && speed > DRIFT_MIN_SPEED;
-            if drift_capable && (racer.input.star_drift || slip > enter_thresh) {
+            if drift_capable && (racer.input.drift || slip > enter_thresh) {
                 racer.drift_state = true;
             } else if !drift_capable || slip < SLIP_EXIT_DEG.to_radians() {
                 racer.drift_state = false;
@@ -1018,7 +1018,7 @@ impl Lobby {
             racer.reversing = update_reverse_mode(
                 racer.reversing,
                 forward_speed,
-                racer.input.star_drift,
+                racer.input.drift,
                 racer.input.throttle,
             );
 
@@ -1031,10 +1031,7 @@ impl Lobby {
                     rb.add_force(forward * REVERSE_FORCE, true);
                 }
 
-                if racer.input.star_drift
-                    && !racer.input.throttle
-                    && forward_speed > BRAKE_MIN_SPEED
-                {
+                if racer.input.drift && !racer.input.throttle && forward_speed > BRAKE_MIN_SPEED {
                     let v = rb.linvel();
                     if v.length() > 0.01 {
                         rb.add_force(-v.normalize() * BRAKE_FORCE, true);
@@ -1068,7 +1065,7 @@ impl Lobby {
             // Manual-drift flick: pressing drift + a direction together snaps the yaw
             // rate hard at once (same sign as the steer target) — a sharp deliberate
             // turn-in. Fires on the key's press edge only.
-            let drift_just_pressed = racer.input.star_drift && !racer.prev_star_drift;
+            let drift_just_pressed = racer.input.drift && !racer.prev_drift;
             if drift_just_pressed
                 && grounded
                 && speed > DRIFT_MIN_SPEED
@@ -1094,7 +1091,7 @@ impl Lobby {
                 delta,
                 grounded,
             );
-            racer.prev_star_drift = racer.input.star_drift;
+            racer.prev_drift = racer.input.drift;
             racer.prev_drift_state = racer.drift_state;
         }
 

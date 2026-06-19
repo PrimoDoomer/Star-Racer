@@ -16,8 +16,8 @@
                      Export templates MUST match the editor version exactly.
     OUT              Output directory (default: <repo>\build\web). The -OutDir
                      parameter takes precedence.
-    STAR_RACER_CACHE Disk dir for the downloaded binary + template bundle
-                     (default: %LOCALAPPDATA%\star-racer-godot).
+    POCKET_RACING_CACHE Disk dir for the downloaded binary + template bundle
+                     (default: %LOCALAPPDATA%\pocket-racing-godot).
     TEMPLATES_DIR    Override the export-templates install dir
                      (default: %APPDATA%\Godot\export_templates\<version>).
 
@@ -43,7 +43,7 @@ $RepoRoot  = Split-Path -Parent $PSScriptRoot
 $ClientDir = Join-Path $RepoRoot 'client'
 if (-not $OutDir) { $OutDir = if ($env:OUT) { $env:OUT } else { Join-Path $RepoRoot 'build\web' } }
 
-$CacheDir = if ($env:STAR_RACER_CACHE) { $env:STAR_RACER_CACHE } else { Join-Path $env:LOCALAPPDATA 'star-racer-godot' }
+$CacheDir = if ($env:POCKET_RACING_CACHE) { $env:POCKET_RACING_CACHE } else { Join-Path $env:LOCALAPPDATA 'pocket-racing-godot' }
 
 # Templates version folder uses dots, e.g. "4.6.3-stable" -> "4.6.3.stable".
 $DotVer = $GodotVersion -replace '-', '.'

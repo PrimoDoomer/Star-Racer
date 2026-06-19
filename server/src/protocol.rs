@@ -84,7 +84,7 @@ pub enum ClientMessage {
         throttle: bool,
         steer_left: f64,
         steer_right: f64,
-        star_drift: bool,
+        drift: bool,
     },
 }
 
@@ -184,19 +184,19 @@ mod tests {
     #[test]
     fn client_state_message_deserializes() {
         let json =
-            r#"{"State":{"throttle":true,"steer_left":0.5,"steer_right":0.25,"star_drift":false}}"#;
+            r#"{"State":{"throttle":true,"steer_left":0.5,"steer_right":0.25,"drift":false}}"#;
         let msg: ClientMessage = serde_json::from_str(json).unwrap();
         match msg {
             ClientMessage::State {
                 throttle,
                 steer_left,
                 steer_right,
-                star_drift,
+                drift,
             } => {
                 assert!(throttle);
                 assert_eq!(steer_left, 0.5);
                 assert_eq!(steer_right, 0.25);
-                assert!(!star_drift);
+                assert!(!drift);
             }
             _ => panic!("expected State variant"),
         }

@@ -22,7 +22,12 @@ static func template() -> Dictionary:
 
 ## Pretty-printed, insertion-ordered so the file reads like server/tracks/*.json.
 static func to_json(track_def: Dictionary) -> String:
-	return JSON.stringify(track_def, "  ", false)
+	# laps_to_win must serialise as an integer (server expects a u8); a float value
+	# would otherwise be written as e.g. 3.0, which the SpinBox can produce.
+	var out := track_def.duplicate()
+	if out.has("laps_to_win"):
+		out["laps_to_win"] = int(round(float(out["laps_to_win"])))
+	return JSON.stringify(out, "  ", false)
 
 ## Parsed Dictionary, or null on malformed / non-object JSON.
 static func parse(text: String):

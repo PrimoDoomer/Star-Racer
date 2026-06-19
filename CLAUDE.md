@@ -9,15 +9,14 @@ Pocket Racing — a multiplayer 3D arcade racer. Theme: **toy-scale cars racing 
 giant indoor rooms** (Toy Commander vibe). Authoritative Rust server + Godot 4.6
 client.
 
-Renamed from "Star Racer". The client and all player-facing strings now say
-"Pocket Racing", but the following were **deliberately left unchanged** — renaming
-them breaks the build/deploy or the client↔server wire protocol:
+Renamed from "Star Racer" to "Pocket Racing". The rename is complete across the
+client, the server crate (`pocket-racing-server`), the build/deploy tooling, and
+the client↔server protocol (the drift input-action id + protocol field went
+`Star Drift`/`star_drift` → `Drift`/`drift` in lockstep on both sides).
 
-- Rust crate `star-racer-server`, deploy forced-command `star-racer-deploy`,
-  build-script var `STAR_RACER_CACHE`
-- input-action id `"Star Drift"` + protocol field `star_drift` (on-screen label is
-  just "Drift")
-- GitHub repo URL `PrimoDoomer/Star-Racer`
+One off-repo coupling remains: the deploy forced-command is `pocket-racing-deploy`
+(`.github/workflows/deploy.yml`), which must match the forced command configured in
+the server's `~/.ssh/authorized_keys`. GitHub repo: `pagoyadev/Pocket-Racing`.
 
 ## Architecture
 
@@ -29,7 +28,7 @@ them breaks the build/deploy or the client↔server wire protocol:
   `player.gd`, reconciled toward server-sent positions. Autoloads: `Locale`,
   `Bindings`.
 - **Protocol (`server/src/protocol.rs`)** — serde JSON. `ClientMessage`
-  (`Request` | `State{throttle, steer_left, steer_right, star_drift}`),
+  (`Request` | `State{throttle, steer_left, steer_right, drift}`),
   `ServerMessage` (`Event` | `State` | `Response`). Lobby-based, max 6 players.
 
 The server is the source of truth. Don't move simulation logic client-side, and

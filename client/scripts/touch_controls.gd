@@ -3,7 +3,7 @@ extends Control
 # On-screen touch controls for the mobile / web build (prototype).
 #
 # It does NOT change the game's input handling: it simply drives the existing
-# input actions (Throttle / Steering Left / Steering Right / Star Drift) via
+# input actions (Throttle / Steering Left / Steering Right / Drift) via
 # Input.action_press/release, so player.gd and camera.gd keep reading them
 # exactly as they do for keyboard or gamepad.
 #
@@ -12,7 +12,7 @@ extends Control
 #     the thumb first lands, and only the horizontal offset matters (steering is
 #     a pure left/right axis on the wire — see protocol PlayerState).
 #   - Right side : one large pad held continuously (the thumb's anchor / "grip").
-#     Any contact on it = Throttle. Its lower band adds Star Drift on top, so you
+#     Any contact on it = Throttle. Its lower band adds Drift on top, so you
 #     slide the thumb down to drift/charge and slide it back up to release — the
 #     boost then fires on re-alignment (player.gd boost FSM). Throttle never drops
 #     while sliding, because the whole pad keeps it pressed.
@@ -69,10 +69,15 @@ func _touch_mode() -> bool:
 func _is_active() -> bool:
 	if _game == null:
 		return false
-	# Visible as soon as we're on the track — including the pre-race lobby /
-	# countdown, so a mobile player sees the controls on entering and can hold
-	# throttle for the rocket-start.
-	var on_track: bool = _game.mode == Game.Mode.IN_RACE or _game.mode == Game.Mode.LOBBY_INTERMISSION
+	# On-track means racing, or the on-track pre-race countdown — LOBBY_INTERMISSION
+	# with the lobby menu hidden (mirrors ui.gd). On the lobby waiting screen the
+	# intermission menu is up, so the controls stay hidden there instead of covering
+	# it; they appear once the track is revealed, still in time to hold throttle for
+	# the rocket-start.
+	var on_track := _game.mode == Game.Mode.IN_RACE
+	if _game.mode == Game.Mode.LOBBY_INTERMISSION:
+		var menu := _game.get_node_or_null("UI/IntermissionMenu")
+		on_track = menu != null and not menu.visible
 	return on_track and not _game.paused and _touch_mode()
 
 func _process(_delta: float) -> void:
@@ -186,12 +191,12 @@ func _apply_inputs() -> void:
 	else:
 		Input.action_release("Throttle")
 	if drift:
-		Input.action_press("Star Drift")
+		Input.action_press("Drift")
 	else:
-		Input.action_release("Star Drift")
+		Input.action_release("Drift")
 
 func _release_all() -> void:
-	for a in ["Throttle", "Star Drift", "Steering Left", "Steering Right"]:
+	for a in ["Throttle", "Drift", "Steering Left", "Steering Right"]:
 		Input.action_release(a)
 
 # --- Geometry helpers -------------------------------------------------------

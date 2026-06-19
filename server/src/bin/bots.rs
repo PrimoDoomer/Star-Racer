@@ -2,7 +2,7 @@ use futures_util::{
     stream::{SplitSink, SplitStream},
     SinkExt, StreamExt,
 };
-use star_racer_server::protocol::{
+use pocket_racing_server::protocol::{
     ClientMessage, ColorProto, LobbyState, QuatProto, RequestMessage, Response, ServerMessage,
 };
 use std::sync::{Arc, Mutex};
@@ -361,7 +361,7 @@ async fn drive_bot(
                 throttle,
                 steer_left: sl,
                 steer_right: sr,
-                star_drift: drift,
+                drift,
             }))
             .await
             .is_err()
