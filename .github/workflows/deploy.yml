@@ -1,0 +1,128 @@
+name: Deploy
+
+on:
+  push:
+    branches: [release]
+  workflow_dispatch: # manual re-deploy from the Actions tab
+
+concurrency:
+  group: deploy
+  # Queue concurrent deploys instead of cancelling: aborting a run mid-rsync or
+  # mid-restart would leave the server in a partial state.
+  cancel-in-progress: false
+
+env:
+  GODOT_VERSION: "4.6-stable"
+
+jobs:
+  verify-server:
+    uses: ./.github/workflows/server.yml
+
+  verify-client:
+    uses: ./.github/workflows/client.yml
+
+  build-server:
+    needs: verify-server
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo registry and target
+        uses: Swatinem/rust-cache@v2
+
+      # - name: Test (last gate before shipping)
+      #   working-directory: ./server
+      #   run: cargo test --lib
+
+      - name: Build release binaries
+        working-directory: ./server
+        run: cargo build --release --bin server --bin bots
+
+      - name: Stage artifacts
+        run: |
+          mkdir -p dist/tracks
+          cp server/target/release/server dist/
+          cp server/target/release/bots dist/
+          cp server/tracks/*.json dist/tracks/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: server-dist
+          path: dist/
+          retention-days: 3
+
+  build-client-web:
+    needs: verify-client
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Godot ${{ env.GODOT_VERSION }} + export templates
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/godot"
+          cd "$HOME/godot"
+          curl -fL -o godot.zip \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/Godot_v${GODOT_VERSION}_linux.x86_64.zip"
+          unzip -q godot.zip
+          mv Godot_v${GODOT_VERSION}_linux.x86_64 godot
+          chmod +x godot
+          echo "$HOME/godot" >> "$GITHUB_PATH"
+          curl -fL -o templates.tpz \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/Godot_v${GODOT_VERSION}_export_templates.tpz"
+          unzip -q templates.tpz -d /tmp/tpl
+          mkdir -p "$HOME/.local/share/godot/export_templates"
+          mv /tmp/tpl/templates "$HOME/.local/share/godot/export_templates/${GODOT_VERSION/-/.}"
+
+      - name: Export Web build
+        working-directory: ./client
+        run: |
+          set -euo pipefail
+          godot --headless --import || true
+          mkdir -p ../web
+          godot --headless --export-release "Web" ../web/index.html
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: client-web
+          path: web/
+          retention-days: 3
+
+  deploy:
+    needs: [build-server, build-client-web]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: server-dist
+          path: dist
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: client-web
+          path: dist/web
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_UPLOAD }}" > ~/.ssh/upload_key
+          echo "${{ secrets.SSH_DEPLOY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/upload_key ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
+
+      # rrsync on the server restricts this key to write-only access under
+      # incoming/. --delete makes incoming/ an exact mirror of dist/ so tracks
+      # removed from the repo are gone before the deploy step reads it.
+      # Remote path is omitted: rrsync's root IS incoming/.
+      - name: Upload to incoming/
+        run: |
+          rsync -a --delete -e "ssh -i ~/.ssh/upload_key" \
+            dist/ deploy@${{ secrets.DEPLOY_HOST }}:
+
+      # The forced command on the server side only accepts "pocket-racing-deploy":
+      # it installs binaries, syncs tracks + web root and restarts both services.
+      - name: Trigger deploy
+        run: ssh -i ~/.ssh/deploy_key deploy@${{ secrets.DEPLOY_HOST }} pocket-racing-deploy

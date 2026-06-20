@@ -1,0 +1,32 @@
+[gd_scene format=3 uid="uid://ci8rakxld2jn4"]
+
+[ext_resource type="Script" uid="uid://2enfooltbgot" path="res://scripts/player.gd" id="1_g2els"]
+[ext_resource type="Script" uid="uid://0g1xtup3ydqf" path="res://scripts/camera.gd" id="3_dqkch"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_car"]
+friction = 0.0
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_v0iea"]
+size = Vector3(2.6, 1.2, 4.8)
+
+[node name="Car" type="RigidBody3D" unique_id=911942295]
+mass = 1000.0
+physics_material_override = SubResource("PhysicsMaterial_car")
+center_of_mass_mode = 1
+center_of_mass = Vector3(0, -0.4, 0)
+script = ExtResource("1_g2els")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=549238354]
+shape = SubResource("BoxShape3D_v0iea")
+
+[node name="GroundRay" type="RayCast3D" parent="."]
+target_position = Vector3(0, -1.0, 0)
+
+[node name="Forward" type="Node3D" parent="." unique_id=577425519]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -3)
+
+[node name="Camera" type="Camera3D" parent="." unique_id=2113304178]
+transform = Transform3D(1, -2.9652021e-08, -2.3902825e-07, 1.4519352e-07, 0.86602545, 0.49999997, 1.9217853e-07, -0.49999997, 0.86602545, 0, 3.9535747, 3.7251148)
+fov = 90.0
+script = ExtResource("3_dqkch")
