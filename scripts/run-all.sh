@@ -1,0 +1,129 @@
+#!/usr/bin/env bash
+# Launches the server, the bots, and the Godot client.
+# Usage: bash scripts/run-all.sh [--release]
+#
+# Override the Godot binary with the GODOT env var (default: "godot").
+
+set -euo pipefail
+
+# Job control: each background job becomes its own process-group leader, so on
+# teardown we can kill the whole group (negative pid) and take descendants with
+# it. This is the Unix analog of the Windows kill-on-close job object.
+set -m
+
+RepoRoot="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ServerDir="$RepoRoot/server"
+ClientDir="$RepoRoot/client"
+GODOT_BIN="${GODOT:-godot}"
+
+if ! command -v "$GODOT_BIN" &>/dev/null; then
+    echo "[run-all] Error: '$GODOT_BIN' not found. Set GODOT env var to the Godot executable path." >&2
+    exit 1
+fi
+
+CARGO_PROFILE_FLAG=""
+TARGET="debug"
+if [[ "${1:-}" == "--release" ]]; then
+    CARGO_PROFILE_FLAG="--release"
+    TARGET="release"
+fi
+
+server_log=""
+pids=()
+display_pids=()
+
+cleanup() {
+    echo
+    echo "[run-all] Stopping child processes…"
+    for pid in "${display_pids[@]+"${display_pids[@]}"}" "${pids[@]+"${pids[@]}"}"; do
+        if kill -0 "$pid" 2>/dev/null; then
+            # Negative pid = the whole process group, so any descendants die too;
+            # fall back to the bare pid if it isn't a group leader.
+            kill -- -"$pid" 2>/dev/null || kill "$pid" 2>/dev/null || true
+        fi
+    done
+    [[ -n "$server_log" ]] && rm -f "$server_log"
+    wait 2>/dev/null || true
+}
+# HUP covers the terminal window being closed; INT/TERM cover Ctrl+C and kill.
+# A SIGKILL of this script can't be trapped (same as taskkill on Windows) — the
+# :8080 guard below is the safety net that cleans up such an orphan next launch.
+trap cleanup EXIT INT TERM HUP
+
+echo "[run-all] Building binaries…"
+( cd "$ServerDir" && cargo build $CARGO_PROFILE_FLAG --bin server --bin bots )
+
+# Free :8080 if a previous run left a server behind — but ONLY if the holder is
+# one of our own freshly built binaries. 8080 is a common dev port, so a foreign
+# holder is left untouched and we abort rather than risk killing something else.
+own_exes=("$ServerDir/target/$TARGET/server" "$ServerDir/target/$TARGET/bots")
+port_holders() {
+    if command -v lsof &>/dev/null; then
+        lsof -nP -iTCP:8080 -sTCP:LISTEN -t 2>/dev/null | sort -u
+    elif command -v ss &>/dev/null; then
+        ss -lptnH 'sport = :8080' 2>/dev/null | grep -oE 'pid=[0-9]+' | cut -d= -f2 | sort -u
+    fi
+}
+holder_exe() {
+    if [[ -r "/proc/$1/exe" ]]; then
+        readlink -f "/proc/$1/exe" 2>/dev/null   # Linux
+    else
+        ps -p "$1" -o comm= 2>/dev/null           # macOS: full executable path
+    fi
+}
+if ! command -v lsof &>/dev/null && ! command -v ss &>/dev/null; then
+    echo "[run-all] WARNING: neither lsof nor ss found; cannot check if :8080 is free." >&2
+fi
+for holder in $(port_holders); do
+    path="$(holder_exe "$holder")"
+    is_ours=false
+    for exe in "${own_exes[@]}"; do
+        [[ "$path" == "$exe" ]] && is_ours=true
+    done
+    if $is_ours; then
+        echo "[run-all] Freeing :8080 — killing our own stale process (PID $holder)"
+        kill -9 "$holder" 2>/dev/null || true
+    else
+        echo "[run-all] ERROR: port 8080 is held by a process that isn't ours: PID $holder ($path). Refusing to kill it — free the port and retry." >&2
+        exit 1
+    fi
+done
+
+echo "[run-all] Starting server…"
+server_log=$(mktemp)
+"$ServerDir/target/$TARGET/server" >"$server_log" 2>&1 &
+pids+=($!)
+tail -f "$server_log" &
+display_pids+=($!)
+
+echo "[run-all] Waiting for 'core loop spawned'…"
+deadline=$((SECONDS + 60))
+server_ready=false
+while [[ $SECONDS -lt $deadline ]]; do
+    if grep -q 'core loop spawned' "$server_log" 2>/dev/null; then
+        server_ready=true
+        break
+    fi
+    sleep 0.3
+done
+$server_ready || echo "[run-all] WARNING: Ready signal not seen after 60 s, proceeding anyway." >&2
+
+echo "[run-all] Starting bots…"
+"$ServerDir/target/$TARGET/bots" >/dev/null 2>&1 &
+pids+=($!)
+
+BOT_WARMUP="${BOT_WARMUP:-2}"
+echo "[run-all] Letting bots settle for ${BOT_WARMUP}s…"
+sleep "$BOT_WARMUP"
+
+echo "[run-all] Starting Godot client ($GODOT_BIN)…"
+( cd "$ClientDir" && exec "$GODOT_BIN" --path "$ClientDir" ) &
+godot_pid=$!
+pids+=($godot_pid)
+sleep 2
+if ! kill -0 "$godot_pid" 2>/dev/null; then
+    echo "[run-all] ERROR: Godot exited immediately. Run manually to diagnose: $GODOT_BIN --path \"$ClientDir\"" >&2
+fi
+
+echo "[run-all] All processes launched. Ctrl+C to stop."
+wait

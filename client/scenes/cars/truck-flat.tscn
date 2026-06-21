@@ -1,0 +1,19 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" uid="uid://cdrsb7m37jmtr" path="res://assets/models/truck-flat.glb" id="1"]
+
+[node name="TruckFlat" type="Node3D"]
+
+[node name="Lift" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.049, 0)
+
+[node name="Scale" type="Node3D" parent="Lift"]
+transform = Transform3D(1.44, 0, 0, 0, 1.44, 0, 0, 0, 1.44, 0, 0, 0)
+
+[node name="Orient" type="Node3D" parent="Lift/Scale"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0)
+
+[node name="Recenter" type="Node3D" parent="Lift/Scale/Orient"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.416, 0)
+
+[node name="truck-flat" parent="Lift/Scale/Orient/Recenter" instance=ExtResource("1")]
