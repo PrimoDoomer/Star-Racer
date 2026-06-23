@@ -1,0 +1,122 @@
+# Single source of truth for the shared server <-> client physics tuning.
+#
+# The server (lobby.rs, authoritative) and the client (player.gd, prediction)
+# MUST run the identical numbers or prediction desyncs. Edit them HERE, once,
+# then regenerate:
+#
+#     py scripts/gen_tuning.py
+#
+# which writes server/src/tuning.rs (Rust consts) and client/scripts/tuning.gd
+# (a `Tuning` class). `py scripts/gen_tuning.py --check` (run by scripts/run-tests)
+# fails CI if those generated files are stale.
+#
+# Format: `NAME = EXPR`, one per line, `#` comments. EXPR must be valid in BOTH
+# Rust and GDScript (number literals with `_`, `* / + - ( )`, and references to
+# an earlier NAME) — which plain arithmetic on f64 already is.
+
+# Master pace knob: forces, launch & boost speeds and the lateral-grip caps all
+# derive from this. Each x4/3 bumps the whole pace by a third.
+PACE_SCALE = 16.0 / 9.0
+
+# --- Car body (mirrored in lobby.rs MassProperties + player.gd _ready) --------
+# Heavy + high pitch/roll inertia so the car feels planted and resists tipping;
+# centre of mass lowered so a hard flick can't tip it. gravity is the world pull.
+MASS = 1300.0
+INERTIA_X = 3400.0
+INERTIA_Y = 3200.0
+INERTIA_Z = 2800.0
+COM_Y = -0.4
+GRAVITY = 22.0
+
+# --- Drive / brake forces -----------------------------------------------------
+THROTTLE_FORCE = 14_500.0 * PACE_SCALE
+REVERSE_FORCE = 2_500.0 * PACE_SCALE
+BRAKE_FORCE = 4_000.0 * PACE_SCALE
+BRAKE_MIN_SPEED = 0.5
+
+# --- Damping ------------------------------------------------------------------
+NORMAL_LINEAR_DAMPING = 0.3
+DRIFT_LINEAR_DAMPING = 0.18
+DRIFT_MIN_SPEED = 1.5
+
+# --- Steering / lateral traction ----------------------------------------------
+# Sideways velocity is cancelled up to a capped lateral ACCELERATION, so the
+# achievable turn rate is lat_accel/speed: pure grip washes out at racing pace
+# (the "anomaly"), while a drift's lower cap lets the slide live.
+MAX_TURN_RATE_GRIP = 1.2
+MAX_TURN_RATE_DRIFT = 3.6
+STEER_P_GAIN = 25_000.0
+GRIP_LAT_ACCEL = 9.0 * PACE_SCALE
+DRIFT_LAT_ACCEL = 4.0 * PACE_SCALE
+
+# --- Drift state machine ------------------------------------------------------
+# Falling into drift couples ANGLE and EFFORT: gentle steering must build the
+# full SLIP_BREAK_DEG of slide; cranking hard at speed drops the bar to
+# SLIP_BREAK_HARD_DEG. A drift bleeds along-heading speed (DRIFT_SPEED_PENALTY).
+DRIFT_SPEED_PENALTY = 0.6
+SLIP_BREAK_DEG = 18.0
+SLIP_BREAK_HARD_DEG = 5.0
+DRIFT_EFFORT_SPEED_REF = 6.0
+SLIP_EXIT_DEG = 8.0
+DRIFT_FLICK_RATE = 5.5
+GRIP_BLEND_RATE = 6.0
+
+# --- Anti-spin ----------------------------------------------------------------
+# Past SPIN_GUARD_DEG of slide, bias the yaw target back toward velocity (ramping
+# to SPIN_RESTORE_RATE by SPIN_LIMIT_DEG) so a drift can't whip into a spin-out.
+SPIN_GUARD_DEG = 55.0
+SPIN_LIMIT_DEG = 84.0
+SPIN_RESTORE_RATE = 6.0
+
+# --- Uprighting assist (grounded only) ----------------------------------------
+# The assist restores the car's up toward the GROUND surface normal (so it hugs
+# banks/inclines) instead of world-up — but only when that normal is at least this
+# vertical (n.y); a wall/steep touch below the threshold falls back to world-up so
+# it can't tip the car. 0.35 ≈ trusts surfaces banked up to ~70°.
+UPRIGHT_GAIN = 120_000.0
+UPRIGHT_DAMP = 32_000.0
+GROUND_ALIGN_MIN_NY = 0.35
+
+# --- Grounding / jump ---------------------------------------------------------
+COYOTE_GROUND_SECS = 0.10
+JUMP_SPEED = 13.0
+MOTION_DIRECTION_EPSILON = 0.25
+
+# --- Drift boost --------------------------------------------------------------
+# Charge fills fast up to BOOST_CHARGE_KNEE (~2/3), then tapers to
+# BOOST_CHARGE_TOP_FACTOR of that rate toward full, so maxing the bar takes a
+# long, committed drift. The angle term adds fill as the slip approaches
+# BOOST_CHARGE_ANGLE_REF_DEG.
+BOOST_CHARGE_RATE = 0.11
+BOOST_CHARGE_ANGLE_RATE = 0.36
+BOOST_CHARGE_ANGLE_REF_DEG = 35.0
+BOOST_CHARGE_KNEE = 0.667
+BOOST_CHARGE_TOP_FACTOR = 0.25
+BOOST_CHARGE_DECAY = 2.0
+BOOST_CHARGE_MIN = 0.15
+BOOST_PEAK_BONUS = 11.5 * PACE_SCALE
+BOOST_DURATION = 1.5
+BOOST_ALIGN_THRESHOLD_COS = 0.9781476
+BOOST_PENDING_TIMEOUT = 1.5
+BOOST_SUSTAIN_FORCE = 16_500.0 * PACE_SCALE
+
+# --- Cruise / turbo -----------------------------------------------------------
+# NOTE: CRUISE_SPEED is kept on a LEGACY reference mass of 1000 (not MASS=1300),
+# so its value is unchanged from before the dedup. Real terminal speed is
+# THROTTLE_FORCE/(MASS*NORMAL_LINEAR_DAMPING); switching this to MASS would lower
+# the turbo cap & boost reference (a feel change), so it's left as a deliberate
+# constant pending a separate gameplay decision.
+CRUISE_SPEED = THROTTLE_FORCE / (1000.0 * NORMAL_LINEAR_DAMPING)
+TURBO_PEAK_SPEED = 1.5 * CRUISE_SPEED
+TURBO_FORCE = 30_000.0 * PACE_SCALE
+TURBO_CHARGE_RATE = 0.04
+TURBO_CHARGE_ANGLE_RATE = 0.15
+TURBO_DRAIN_RATE = 0.5
+
+# --- Launch (rocket start) ----------------------------------------------------
+# Quality grades the SIGNED offset of the first throttle press from GO:
+# quality = (1 - |off|/LAUNCH_WINDOW)^LAUNCH_SHARPNESS.
+LAUNCH_WINDOW = 0.40
+LAUNCH_SHARPNESS = 1.3
+LAUNCH_SPEED = 32.0 * PACE_SCALE
+PAD_BOOST_SCALE = 0.5
