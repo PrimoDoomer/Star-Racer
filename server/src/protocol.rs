@@ -1,0 +1,407 @@
+use crate::track::TrackDef;
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize, Clone, Copy, Debug)]
+pub struct Vec3Proto {
+    pub x: f64,
+    pub y: f64,
+    pub z: f64,
+}
+
+#[derive(Serialize, Deserialize, Clone, Copy)]
+pub struct QuatProto {
+    pub x: f64,
+    pub y: f64,
+    pub z: f64,
+    pub w: f64,
+}
+
+pub type ColorProto = Vec3Proto;
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct PlayerState {
+    pub nickname: String,
+    pub racing: bool,
+    pub laps: u8,
+    /// Live race position (1 = leading). 0 before the race assigns one.
+    #[serde(default)]
+    pub rank: u8,
+    pub position: Vec3Proto,
+    pub rotation: QuatProto,
+    pub color: ColorProto,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct SpawnInfo {
+    pub y_rotation: f64,
+    pub position: Vec3Proto,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+pub enum JoinError {
+    NicknameAlreadyUsed,
+    LobbyFull,
+    LobbyAlreadyExists,
+    LobbyNotFound,
+    InvalidLobbyConfig,
+    InvalidName,
+    TrackNotFound,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct TrackInfo {
+    pub id: String,
+    pub name: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub enum RequestMessage {
+    FetchLobbyList,
+    FetchTrackList,
+    CreateLobby {
+        lobby_id: String,
+        track_id: String,
+        nickname: String,
+        min_players: u8,
+        max_players: u8,
+        color: ColorProto,
+        /// Chosen horn id, echoed to other players in `Honk` events so they hear the
+        /// right sound. Defaulted so older clients still parse.
+        #[serde(default)]
+        horn_id: String,
+        /// Hash of the track the client already has cached, if any. The server
+        /// omits the full track from `LobbyJoined` when it matches the current
+        /// track, so an unchanged track is never re-sent.
+        #[serde(default)]
+        cached_track_hash: Option<String>,
+        /// Per-lobby gameplay tuning overrides (constant NAME -> value), applied for
+        /// the lobby's whole life. Empty = stock tuning. Defaulted for old clients.
+        #[serde(default)]
+        tweaks: std::collections::HashMap<String, f64>,
+    },
+    JoinLobby {
+        lobby_id: String,
+        nickname: String,
+        color: ColorProto,
+        #[serde(default)]
+        horn_id: String,
+        #[serde(default)]
+        cached_track_hash: Option<String>,
+    },
+}
+
+#[derive(Serialize, Deserialize)]
+pub enum ClientMessage {
+    Request(RequestMessage),
+    State {
+        throttle: bool,
+        steer_left: f64,
+        steer_right: f64,
+        drift: bool,
+        /// Edge-triggered request to respawn the car at its last crossed
+        /// checkpoint (or the start). Defaulted so older clients still parse.
+        #[serde(default)]
+        respawn: bool,
+        /// Held turbo input: while true (and the turbo bar has charge) the car gets
+        /// a forward push. Independent of drift — both can be active at once.
+        #[serde(default)]
+        turbo: bool,
+        /// Edge-triggered jump: on the rising edge, if grounded, the car hops.
+        /// Defaulted so older clients still parse.
+        #[serde(default)]
+        jump: bool,
+        /// Edge-triggered horn: on the rising edge the server broadcasts a `Honk`
+        /// so every other player hears this car's horn. Defaulted for old clients.
+        #[serde(default)]
+        horn: bool,
+        /// Edge-triggered air-roll / surface-recover ("tonneau"): on the rising
+        /// edge, while airborne, the car raycasts in a view-relative aim and either
+        /// snaps onto the hit surface (wheels down) or barrel-rolls. Defaulted.
+        #[serde(default)]
+        air_roll: bool,
+        /// The camera (view) yaw in radians, so the air-roll aim is view-relative —
+        /// independent of the car's (possibly tumbling) orientation. Defaulted.
+        #[serde(default)]
+        view_yaw: f64,
+    },
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct LobbyInfo {
+    pub name: String,
+    pub owner: String,
+    pub start_time: String,
+    pub player_count: u8,
+    pub min_players: u8,
+    pub max_players: u8,
+    pub racing: bool,
+    pub track_id: String,
+    pub track_name: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub enum Response {
+    LobbyList(Vec<LobbyInfo>),
+    TrackList(Vec<TrackInfo>),
+
+    LobbyJoined {
+        track_id: String,
+        /// Content hash of the lobby's current track, so the client can tell
+        /// whether its cached copy is still valid.
+        #[serde(default)]
+        track_hash: String,
+        race_ongoing: bool,
+        min_players: u8,
+        max_players: u8,
+        error: Option<JoinError>,
+        /// Full track def, sent only when the client's cached hash didn't match
+        /// (or it had none). Omitted when the client is already up to date. Boxed
+        /// to keep this (otherwise large) enum variant small; serialises the same.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        track: Option<Box<TrackDef>>,
+        /// The lobby's per-lobby gameplay tuning overrides (constant NAME -> value),
+        /// echoed to EVERY joiner so all clients run prediction on the same tweaked
+        /// values as the server (lockstep). Empty = stock tuning. Defaulted.
+        #[serde(default, skip_serializing_if = "std::collections::HashMap::is_empty")]
+        tweaks: std::collections::HashMap<String, f64>,
+    },
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub enum LobbyState {
+    WaitingForPlayers(u8),
+    Players(Vec<PlayerState>),
+}
+
+#[derive(Serialize, Deserialize)]
+pub enum LobbyEvent {
+    /// Pre-race countdown shown in the lobby page. Distinct from the on-track
+    /// start "Countdown"; restarts if the lobby stops being ready.
+    LobbyCountdown {
+        time: f64,
+    },
+    Countdown {
+        time: f64,
+    },
+    /// Seconds left before a finished race force-ends, shown to racers who haven't
+    /// finished yet (starts when the first car crosses the line).
+    FinishCountdown {
+        time: f64,
+    },
+    RaceAboutToStart(SpawnInfo),
+    RaceStarted(()),
+    RaceFinished {
+        winner: String,
+        rankings: Vec<String>,
+    },
+    /// A player honked: every other client plays `horn_id` at that car's position.
+    Honk {
+        nickname: String,
+        horn_id: String,
+    },
+}
+
+#[derive(Serialize, Deserialize)]
+pub enum ServerMessage {
+    Event(LobbyEvent),
+    State(LobbyState),
+    Response(Response),
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn join_error_roundtrip_all_variants() {
+        let errors = [
+            JoinError::NicknameAlreadyUsed,
+            JoinError::LobbyFull,
+            JoinError::LobbyAlreadyExists,
+            JoinError::LobbyNotFound,
+            JoinError::InvalidLobbyConfig,
+            JoinError::TrackNotFound,
+        ];
+        for err in errors {
+            let json = serde_json::to_string(&err).unwrap();
+            let back: JoinError = serde_json::from_str(&json).unwrap();
+            assert_eq!(err, back);
+        }
+    }
+
+    #[test]
+    fn client_state_message_deserializes() {
+        let json =
+            r#"{"State":{"throttle":true,"steer_left":0.5,"steer_right":0.25,"drift":false}}"#;
+        let msg: ClientMessage = serde_json::from_str(json).unwrap();
+        match msg {
+            ClientMessage::State {
+                throttle,
+                steer_left,
+                steer_right,
+                drift,
+                respawn,
+                turbo,
+                jump: _,
+                horn: _,
+                air_roll,
+                view_yaw,
+            } => {
+                assert!(throttle);
+                assert_eq!(steer_left, 0.5);
+                assert_eq!(steer_right, 0.25);
+                assert!(!drift);
+                assert!(!respawn); // omitted in JSON → serde default
+                assert!(!turbo); // omitted in JSON → serde default
+                assert!(!air_roll); // omitted in JSON → serde default
+                assert_eq!(view_yaw, 0.0); // omitted in JSON → serde default
+            }
+            _ => panic!("expected State variant"),
+        }
+    }
+
+    #[test]
+    fn fetch_lobby_list_request_deserializes() {
+        let json = r#"{"Request":"FetchLobbyList"}"#;
+        let msg: ClientMessage = serde_json::from_str(json).unwrap();
+        assert!(matches!(
+            msg,
+            ClientMessage::Request(RequestMessage::FetchLobbyList)
+        ));
+    }
+
+    #[test]
+    fn create_lobby_request_deserializes() {
+        let json = r#"{"Request":{"CreateLobby":{"lobby_id":"abc","track_id":"circuit_one","nickname":"alice","min_players":2,"max_players":4,"color":{"x":1.0,"y":0.0,"z":0.0}}}}"#;
+        let msg: ClientMessage = serde_json::from_str(json).unwrap();
+        match msg {
+            ClientMessage::Request(RequestMessage::CreateLobby {
+                lobby_id,
+                track_id,
+                nickname,
+                min_players,
+                max_players,
+                color,
+                ..
+            }) => {
+                assert_eq!(lobby_id, "abc");
+                assert_eq!(track_id, "circuit_one");
+                assert_eq!(nickname, "alice");
+                assert_eq!(min_players, 2);
+                assert_eq!(max_players, 4);
+                assert_eq!(color.x, 1.0);
+                assert_eq!(color.y, 0.0);
+                assert_eq!(color.z, 0.0);
+            }
+            _ => panic!("expected CreateLobby variant"),
+        }
+    }
+
+    #[test]
+    fn fetch_track_list_request_deserializes() {
+        let json = r#"{"Request":"FetchTrackList"}"#;
+        let msg: ClientMessage = serde_json::from_str(json).unwrap();
+        assert!(matches!(
+            msg,
+            ClientMessage::Request(RequestMessage::FetchTrackList)
+        ));
+    }
+
+    #[test]
+    fn track_list_response_serializes() {
+        let msg = ServerMessage::Response(Response::TrackList(vec![
+            TrackInfo {
+                id: "circuit_one".into(),
+                name: "Circuit One".into(),
+            },
+            TrackInfo {
+                id: "circuit_two".into(),
+                name: "Circuit Two".into(),
+            },
+        ]));
+        let json = serde_json::to_string(&msg).unwrap();
+        assert!(json.contains("TrackList"));
+        assert!(json.contains("circuit_one"));
+        assert!(json.contains("Circuit Two"));
+    }
+
+    #[test]
+    fn join_lobby_request_deserializes() {
+        let json = r#"{"Request":{"JoinLobby":{"lobby_id":"id","nickname":"bob","color":{"x":0.0,"y":1.0,"z":0.0}}}}"#;
+        let msg: ClientMessage = serde_json::from_str(json).unwrap();
+        assert!(matches!(
+            msg,
+            ClientMessage::Request(RequestMessage::JoinLobby { .. })
+        ));
+    }
+
+    #[test]
+    fn invalid_client_message_fails_deserialization() {
+        let json = r#"{"Unknown":{}}"#;
+        assert!(serde_json::from_str::<ClientMessage>(json).is_err());
+    }
+
+    #[test]
+    fn server_response_lobby_list_serializes() {
+        let msg = ServerMessage::Response(Response::LobbyList(vec![LobbyInfo {
+            name: "foo".into(),
+            owner: "alice".into(),
+            start_time: "12:00".into(),
+            player_count: 1,
+            min_players: 2,
+            max_players: 4,
+            racing: false,
+            track_id: "circuit_one".into(),
+            track_name: "Circuit One".into(),
+        }]));
+        let json = serde_json::to_string(&msg).unwrap();
+        assert!(json.contains("LobbyList"));
+        assert!(json.contains("foo"));
+        assert!(json.contains("alice"));
+        assert!(json.contains("\"track_name\":\"Circuit One\""));
+    }
+
+    #[test]
+    fn server_event_race_started_serializes() {
+        let msg = ServerMessage::Event(LobbyEvent::RaceStarted(()));
+        let json = serde_json::to_string(&msg).unwrap();
+        assert!(json.contains("RaceStarted"));
+    }
+
+    #[test]
+    fn lobby_state_waiting_for_players_serializes() {
+        let msg = ServerMessage::State(LobbyState::WaitingForPlayers(3));
+        let json = serde_json::to_string(&msg).unwrap();
+        assert!(json.contains("WaitingForPlayers"));
+        assert!(json.contains('3'));
+    }
+
+    #[test]
+    fn race_finished_event_carries_winner_and_rankings() {
+        let msg = ServerMessage::Event(LobbyEvent::RaceFinished {
+            winner: "alice".into(),
+            rankings: vec!["alice".into(), "bob".into()],
+        });
+        let json = serde_json::to_string(&msg).unwrap();
+        assert!(json.contains("alice"));
+        assert!(json.contains("bob"));
+    }
+
+    #[test]
+    fn lobby_joined_response_serializes_with_race_ongoing() {
+        let msg = ServerMessage::Response(Response::LobbyJoined {
+            track_id: "circuit_one".into(),
+            track_hash: "deadbeef".into(),
+            race_ongoing: true,
+            min_players: 2,
+            max_players: 4,
+            error: None,
+            track: None,
+            tweaks: Default::default(),
+        });
+        let json = serde_json::to_string(&msg).unwrap();
+        assert!(json.contains("LobbyJoined"));
+        assert!(json.contains("\"race_ongoing\":true"));
+        assert!(json.contains("circuit_one"));
+    }
+}
